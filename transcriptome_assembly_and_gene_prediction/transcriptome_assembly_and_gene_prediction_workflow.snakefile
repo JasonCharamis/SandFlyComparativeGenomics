@@ -25,13 +25,12 @@ species = samples[:-3]
 rule all:
      input: 'evigene/trinity_unfiltered_spadeshard/okayset/{species}.trinityunfiltered.spadeshard.okay.tr'
 
-
 rule make_dir:
      output: directory({species})
      shell: "mkdir {species}"
                     
 rule trinity:
-     input: species_dir = rules.mkdir.output, 
+     input: species_dir = rules.make_dir.output, 
             species_samples = '{species}.samples'
 
      output: trinity_fasta = '{species}/trinity_out_dir/trinity_out_dir.Trinity.fasta'
