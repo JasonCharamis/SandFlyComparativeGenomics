@@ -1,2 +1,0 @@
-SyntaxError in file /home/jason/bin/SandFlyComparativeGenomics/transcriptome_assembly_and_gene_prediction_workflow.snakefile, line 33:
-No rule keywords allowed after run/shell/script/notebook/wrapper/template_engine/cwl in rule mkdir. (transcriptome_assembly_and_gene_prediction_workflow.snakefile, line 33)

@@ -1,3 +1,0 @@
-KeyError in file /home/jason/bin/SandFlyComparativeGenomics/transcriptome_assembly_and_gene_prediction_workflow.snakefile, line 16:
-'data_directory'
-  File "/home/jason/bin/SandFlyComparativeGenomics/transcriptome_assembly_and_gene_prediction_workflow.snakefile", line 16, in <module>
