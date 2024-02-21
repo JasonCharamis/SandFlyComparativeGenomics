@@ -51,3 +51,6 @@ rsconnect/
 # Emacs intermediate files
 *~
 *'#*
+
+# Snakemake log files
+.snakemake*
