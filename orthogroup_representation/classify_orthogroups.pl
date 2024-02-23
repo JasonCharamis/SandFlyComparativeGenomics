@@ -7,7 +7,7 @@ sub print_usage {
     print <<"END_USAGE";
 
 pwd: Orthofinder/Orthogroups
-Usage: perl classify_orthogroups.pl Orthogroups.GeneCounts.tsv Orthogroups_Unassigned.tsv Orthogroups.txt
+Usage: perl classify_orthogroups.pl Orthogroups.GeneCounts.tsv Orthogroups_Unassigned.tsv
 
 Options:
   -h, --help    Display this help message
@@ -59,11 +59,9 @@ my %data = ();
 
 open ( IN, $ARGV[0] ); ## Orthogroups.GeneCount.tsv
 open ( IN2, $ARGV[1] ); ## Orthogroups_UnassignedGenes.tsv
-open ( IN3, $ARGV[2] ); ## Orthogroups.txt
 
 open ( OUT0, ">orthology_distribution_for_R.txt" );
 open ( OUT1, ">OGs_per_category_per_species.txt" );
-open ( OUT2, ">orthology_distribution.tsv" );
 
 ##=============================================================## PARSE THROUGH THE Orthogroups_Unassigned.tsv Orthogroups.txt FILES AND GET UNASSIGNED OG IDs ##==================================================##
 
@@ -118,8 +116,8 @@ while ( my $line = <IN> ) {
 		if ( $f[$species] == 1 ) {
 		    $file{$f[0]}{$species} = $f[$species];
 		}
-    }
-}
+	    }
+	}
 
 	my $p = 0;
 	for my $phlebotomines (9..$number_of_cols-2) { #OGs present in phlebotominae with maximum species counts
@@ -418,10 +416,8 @@ if (!$printed) { ## Print header ONCE, with custom order
 		
 	if ($count < $num_keys) {
 	    print OUT1 "$orthology\t";
-	    print OUT2 "$orthology\t";
 	} else {
 	    print OUT1 "$orthology\n";
-	    print OUT2 "$orthology\n";
 	}
     }
     
@@ -432,7 +428,6 @@ if (!$printed) { ## Print header ONCE, with custom order
 ## Print (OUT1) OG IDs per Category per species and (OUT2) actual output of gene counting per OG per species
 for my $sp ( sort keys %subsets) { 
     print OUT1 "$sp\t"; ## First print the sorted species names
-    print OUT2 "$sp\t"; ## First print the sorted species names
 
     my $num_orthology = scalar ( @categories );
     my $orthology_count = 0;
@@ -441,10 +436,9 @@ for my $sp ( sort keys %subsets) {
 	$orthology_count++;
 
 	my %seen;
-	my %seen2;
 
 	if (defined($subsets{$sp}{$orthology}) && ref($subsets{$sp}{$orthology}) eq 'ARRAY') {
-	   # print OUT1 join(",", @{$subsets{$sp}{$orthology}});
+	    print OUT1 join(",", @{$subsets{$sp}{$orthology}});
 
 	    for my $og (@{$subsets{$sp}{$orthology}}) {
 		if (exists $OG2genes{$og}) {
@@ -458,17 +452,10 @@ for my $sp ( sort keys %subsets) {
 	    print("Cannot read this line.\n");
 	}
 
-	unless (exists $seen2{$sp}) {
-	    print OUT2 "$gene_counts{$sp}{$orthology}";
-	    $seen2{$sp}{$orthology} = 1;
-	}
-
 	if ($orthology_count < $num_orthology) {
 	    print OUT1 "\t";
-	    print OUT2 "\t";
 	} else {
 	    print OUT1 "\n";
-	    print OUT2 "\n";
 	}
     }
 }
