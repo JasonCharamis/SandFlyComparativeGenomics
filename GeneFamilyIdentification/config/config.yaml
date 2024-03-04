@@ -1,0 +1,6 @@
+
+reference_dataset: 'FASTA file with reference sequences'
+pfam_db: 'PFAM DATABASE FILE'
+pfam_domain_id: 'PFAM DOMAIN OF INTEREST'
+diamond_threads: 'number of threads given to DIAMOND'
+hmmer_threads: 'number of threads given to HMMER SEARCH'

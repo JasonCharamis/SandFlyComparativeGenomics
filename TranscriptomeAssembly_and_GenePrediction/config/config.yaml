@@ -1,0 +1,5 @@
+
+data_directory: 'Directory containing raw data'
+trinity_threads: 'Number of threads given to Trinity.'
+rnaspades_threads: 'Number of threads given to rnaSPAdes.'
+evigene_threads: 'Number of threads given to EVidentialGene.'
