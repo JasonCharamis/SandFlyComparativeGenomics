@@ -1,29 +1,33 @@
 # Library of functions for constructing multi-level heatmaps using the ComplexHeatmap package.
 
-# Function to check if a package is installed, and if not, install it.
-package_install <- function(package_name) {
-  if (requireNamespace(package_name, quietly = TRUE)) {
-    library(package_name, character.only = TRUE)
-  } else {
-    print(sprintf("%s %s", package_name, "is not installed. Installing it!"))
-    is_available <- BiocManager::available(package_name)
-    
-    if (is_available == "TRUE") {
-      BiocManager::install(package_name)
+load_packages <- function( tools ) {
+  tmp <- as.data.frame(installed.packages()) 
+  max_version <- max(as.numeric(substr(tmp$Built, 1, 1)))
+  tmp <- tmp[as.numeric(substr(tmp$Built, 1, 1)) == max_version, ]
+
+  for ( pkg in tools ) {
+    if ( pkg %in% tmp$Package ) {
+      library (pkg, character.only = TRUE)
     } else {
-      install.packages(package_name)
+         print(sprintf("%s %s", pkg, "is not installed. Installing it!"))
+      
+         if ( pkg %in% BiocManager::available(pkg) ) {
+            BiocManager::install(pkg, dependencies = TRUE, update = TRUE)
+         } else {
+            install.packages(pkg, dependencies = TRUE, ask = FALSE)
+      }
     }
   }
 }
 
-# Load required packages or install them if necessary
-dependencies <- c(
-  "ComplexHeatmap", "ggplot2", "dplyr", "tidyverse"
-)
 
-for (pkg in dependencies) {
-  package_install(pkg)
-}
+# Load required packages or install them if necessary
+dependencies <- c("ComplexHeatmap",
+            		  "ggplot2",
+            		  "dplyr",
+            		  "tidyverse")
+
+load_packages( dependencies )
 
 
 complex_heatmap <- function (counts, reordered_rows = NULL, reordered_cols = NULL, color_palette = NULL, 

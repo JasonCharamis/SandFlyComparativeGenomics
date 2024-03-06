@@ -1,1 +1,13 @@
+.Rhistory
+[#]*[#]
+.\#*
 *~
+_build*
+.Rproj.user
+*-concordance.tex
+*.log
+*.synctex.gz
+*.tex
+*.o
+*.so
+tmp.R
