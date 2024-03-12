@@ -6,13 +6,26 @@ source("~/bin/OliveTrees/OliveTree/R/plotter.R")
 #====================== FIGURE 1: Sand fly species tree and stacked barplots with orthogroup representation ===================#
 
 # Figure 1A: Sand fly species tree
-species_tree <- visualize_tree("Sandfly_species_tree.nwk",
-                               tiplabels = TRUE,
-                               tip_shape_size = 4,
-                               branch_length = TRUE,
-                               bootstrap_numbers = FALSE,
-                               bootstrap_circles = FALSE
-                               )
+species_tree <- read_tree("Supplementary_File_4.Sandfly_species_tree.nwk")
+
+species_tree@phylo$tip.label <- lapply(species_tree@phylo$tip.label, function(x) {
+  gsub(".final_genesets|.geneset", "", x)
+}) %>% unlist()
+
+Figure1A <- visualize_tree(species_tree,
+                           tiplabels = TRUE,
+                           tip_label_size = 4,
+                           pattern = "papatasi",
+                           tip_label_colors = "green",
+                           bootstrap_numbers = FALSE,
+                           bootstrap_circles = TRUE,
+                           bootstrap_number_nudge_x = 0,
+                           bootstrap_number_nudge_y = 0.2,
+                           save = FALSE
+                           )
+
+
+Figure1A
 
 ggsave(plot = Figure1A,
        filename = "Figure_1A.svg",
@@ -51,7 +64,7 @@ ggsave(plot = Figure1B,
 
 # Figure 2A: P450 phylogeny with highlighted clans
 
-P450_tree <- read_tree("Sandfly_1275_P450s_plus_Agambiae.nwk.tree", 
+P450_tree <- read_tree("Supplementary_File_6.Sandfly_1275_P450s_plus_Agambiae.nwk", 
                        bootstrap_support = TRUE)
 
 P450_tree@phylo$tip.label <- lapply(P450_tree@phylo$tip.label, function(x) {
@@ -61,6 +74,19 @@ P450_tree@phylo$tip.label <- lapply(P450_tree@phylo$tip.label, function(x) {
 P450_tree@phylo$tip.label <- lapply(P450_tree@phylo$tip.label, function(x) {
   gsub("^Phlebotomus_papatasi", "papatasi", x)
 }) %>% unlist()
+
+
+visualize_tree (tree = P450_tree, 
+                form = "circular",
+                tiplabels = TRUE,
+                color = group_colors,
+                references = "Agam",
+                mappings_legend = FALSE,
+                tip_label_size = 1,
+                bootstrap_circles = TRUE,
+                bootstrap_numbers = FALSE,
+                save = FALSE
+               )
 
 
 # Use node_ids to identify the labels of parent nodes of the four P450 clans
@@ -258,11 +284,11 @@ ggsave(plot = Figure5A,
 
 
 # Figure 5B: Independent GSTD and GSTX expansions
-gst_tree <- read_tree("Sandfly_309_GSTs_plus_Agambiae.nwk")
-gstd <- extract_subtree(gst_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
-gstx <- extract_subtree(gst_tree, "schwetzi_TRINITY_DN5253_c0_g2_i4_p1", "schwetzi_NODE_7136_length_2426_cov_49_318317_g936_i5_p1")
+GST_tree <- read_tree("Sandfly_309_GSTs_plus_Agambiae.nwk")
+GSTD <- extract_subtree(GST_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
+GSTX <- extract_subtree(GST_tree, "schwetzi_TRINITY_DN5253_c0_g2_i4_p1", "schwetzi_NODE_7136_length_2426_cov_49_318317_g936_i5_p1")
 
-gstd_tree <- visualize_tree(tree = gstd, 
+GSTD_tree <- visualize_tree(tree = GSTD, 
                             color = group_colors,
                             shape = group_shapes,
                             bootstrap_circles = TRUE, 
@@ -275,7 +301,7 @@ gstd_tree <- visualize_tree(tree = gstd,
                             save = FALSE
                             )
 
-gstx_tree <- visualize_tree(tree = gstx, 
+GSTX_tree <- visualize_tree(tree = GSTX, 
                             color = group_colors,
                             shape = group_shapes,
                             bootstrap_circles = TRUE, 
@@ -288,8 +314,8 @@ gstx_tree <- visualize_tree(tree = gstx,
                             save = FALSE
                             )
 
-Figure5B <- multipanel(gstd_tree, 
-                       gstx_tree, 
+Figure5B <- multipanel(GSTD_tree, 
+                       GSTX_tree, 
                        horizontal = TRUE)
 
 ggsave(plot = Figure5B, 
@@ -390,3 +416,6 @@ Figure6 <- multipanel(Figure6AB,
 ggsave(plot = Figure6, 
        filename = "Figure_6.svg", 
        dpi = 600)
+
+
+
