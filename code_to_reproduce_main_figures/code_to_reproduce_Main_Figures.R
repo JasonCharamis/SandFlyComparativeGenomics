@@ -15,17 +15,12 @@ species_tree@phylo$tip.label <- lapply(species_tree@phylo$tip.label, function(x)
 Figure1A <- visualize_tree(species_tree,
                            tiplabels = TRUE,
                            tip_label_size = 4,
-                           pattern = "papatasi",
-                           tip_label_colors = "green",
                            bootstrap_numbers = FALSE,
                            bootstrap_circles = TRUE,
                            bootstrap_number_nudge_x = 0,
                            bootstrap_number_nudge_y = 0.2,
                            save = FALSE
                            )
-
-
-Figure1A
 
 ggsave(plot = Figure1A,
        filename = "Figure_1A.svg",
@@ -76,19 +71,6 @@ P450_tree@phylo$tip.label <- lapply(P450_tree@phylo$tip.label, function(x) {
 }) %>% unlist()
 
 
-visualize_tree (tree = P450_tree, 
-                form = "circular",
-                tiplabels = TRUE,
-                color = group_colors,
-                references = "Agam",
-                mappings_legend = FALSE,
-                tip_label_size = 1,
-                bootstrap_circles = TRUE,
-                bootstrap_numbers = FALSE,
-                save = FALSE
-               )
-
-
 # Use node_ids to identify the labels of parent nodes of the four P450 clans
 node_ids(P450_tree, 
          form = "rectangular", 
@@ -110,7 +92,28 @@ Figure2A <- highlight_tree(P450_tree,
                                       "CYP2" = "gold"
                                      )
                            )
+# Color mappings for each sand fly species
+group_colors <- c(arabicus = "purple",
+                  argentipes =  "cyan",
+                  duboscqi = "salmon2",
+                  longipalpis = "darkgreen",
+                  migonei =  "green",
+                  orientalis =  "gold",
+                  perniciosus =  "lightgreen",
+                  papatasi =  "darkred",
+                  schwetzi  = "blue",
+                  sergenti =  "orange",
+                  tobbi =  "red")
 
+
+Figure_S4 <- visualize_tree(tree = P450_tree,
+                            form = "circular", 
+                            tiplabels = TRUE,
+                            pattern = names(group_colors),
+                            tip_label_colors = group_colors, 
+                            bootstrap_numbers = FALSE,
+                            bootstrap_circles = TRUE,
+                            )
 
 # Figure 2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
 
@@ -327,6 +330,16 @@ Figure5 <- multipanel(Figure5A,
                       Figure5B,
                       horizontal = FALSE
                      )
+
+
+Figure_S7 <- visualize_tree(tree = GST_tree,
+                            form = "circular", 
+                            tiplabels = TRUE,
+                            pattern = names(group_colors),
+                            tip_label_colors = group_colors, 
+                            bootstrap_numbers = FALSE,
+                            bootstrap_circles = TRUE,
+)
 
 
 #======================================================== FIGURES 6A, 6B: Sand fly orthologs for Ace1 and ABCB Mdr Full Transporters ==========================================================#
