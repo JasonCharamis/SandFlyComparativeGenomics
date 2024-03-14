@@ -28,9 +28,7 @@ ggsave(plot = Figure1A,
 
 # Figure 1B: Stacked barplots with orthogroup representation - Input is the orthology_results_for_R.txt produced by classify_orthogroups.pl
 
-orthology_counts <- read.delim("orthology_results_for_R.txt", 
-                               header = T
-                               )
+orthology_counts <- read.delim("orthology_results_for_R.txt", header = T)
 
 order_vector <- c(118:126, 136:144, 163:171, 73:81, 
                   82:90, 91:99, 127:135, 154:162,
@@ -59,8 +57,7 @@ ggsave(plot = Figure1B,
 
 # Figure 2A: P450 phylogeny with highlighted clans
 
-P450_tree <- read_tree("Supplementary_File_6.Sandfly_1275_P450s_plus_Agambiae.nwk", 
-                       bootstrap_support = TRUE)
+P450_tree <- read_tree("Supplementary_File_6.Sandfly_1275_P450s_plus_Agambiae.nwk", bootstrap_support = TRUE)
 
 P450_tree@phylo$tip.label <- lapply(P450_tree@phylo$tip.label, function(x) {
   gsub("^g", "longipalpis_g", x)
@@ -92,31 +89,47 @@ Figure2A <- highlight_tree(P450_tree,
                                       "CYP2" = "gold"
                                      )
                            )
+
 # Color mappings for each sand fly species
 group_colors <- c(arabicus = "purple",
                   argentipes =  "cyan",
                   duboscqi = "salmon2",
-                  longipalpis = "darkgreen",
+                  #longipalpis = "darkgreen",
                   migonei =  "green",
                   orientalis =  "gold",
                   perniciosus =  "lightgreen",
-                  papatasi =  "darkred",
+                  #papatasi =  "darkred",
                   schwetzi  = "blue",
                   sergenti =  "orange",
                   tobbi =  "red")
 
+group_shapes <- c(arabicus = "circle",
+                  argentipes = "circle",
+                  duboscqi = "circle",
+                  longipalpis = "square",
+                  migonei = "square",
+                  orientalis = "circle",
+                  papatasi = "circle",
+                  perniciosus = "circle",
+                  schwetzi = "triangle star",
+                  sergenti = "circle",
+                  tobbi = "circle")
+
 
 Figure_S4 <- visualize_tree(tree = P450_tree,
                             form = "circular", 
-                            tiplabels = TRUE,
-                            pattern = names(group_colors),
+                            color = group_colors,
+                            shape = group_shapes,
+                            references = c("papatasi", "longipalpis", "Agam"),
+                            tip_label_size = 1,
                             tip_label_colors = group_colors, 
                             bootstrap_numbers = FALSE,
                             bootstrap_circles = TRUE,
-                            )
+                            save = FALSE
+                           )
+
 
 # Figure 2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
-
 source("complex_heatmap.R")
 
 Figure2B <- complex_heatmap("P450_gene_counts.tsv", 
@@ -166,7 +179,7 @@ group_shapes <- c(arabicus = "circle",
                   orientalis = "circle",
                   papatasi = "circle",
                   perniciosus = "circle",
-                  schwetzi = "triangle star",
+                  schwetzi = "hexagonal star",
                   sergenti = "circle",
                   tobbi = "circle")
 
@@ -253,14 +266,12 @@ CYP4G347 <- extract_subtree(CYP4G17,
                             tip2 = "sergenti_NODE_11431"
                             )
 
-CYP4G346_orthologs <- lapply (CYP4G346@phylo$tip.label, function (x) { x = "red"} )
-
 CYP4G346_orthologs <- setNames(rep("red", length(CYP4G346@phylo$tip.label)), CYP4G346@phylo$tip.label)
 CYP4G347_orthologs <- setNames(rep("green", length(CYP4G347@phylo$tip.label)), CYP4G347@phylo$tip.label)
 
 sgenes <- c(CYP4G346_orthologs, CYP4G347_orthologs)
 
-Figure4B <- expression_violin_plot("all.P450s.tpm3", 
+Figure4B <- expression_violin_plot("all.P450s.tpm", 
                                    title = "CYP4G346 is the most highly expressed P450 gene", 
                                    selected_genes = sgenes, 
                                    mode = "mean",
@@ -287,7 +298,7 @@ ggsave(plot = Figure5A,
 
 
 # Figure 5B: Independent GSTD and GSTX expansions
-GST_tree <- read_tree("Sandfly_309_GSTs_plus_Agambiae.nwk")
+GST_tree <- read_tree("Supplementary_File_8.Sandfly_309_GSTs_plus_Agambiae.nwk")
 GSTD <- extract_subtree(GST_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
 GSTX <- extract_subtree(GST_tree, "schwetzi_TRINITY_DN5253_c0_g2_i4_p1", "schwetzi_NODE_7136_length_2426_cov_49_318317_g936_i5_p1")
 
@@ -300,7 +311,7 @@ GSTD_tree <- visualize_tree(tree = GSTD,
                             tiplabels = FALSE, 
                             tip_label_size = 6,
                             branch_length = FALSE,
-                            reference1 = "AGAP",
+                            references = "AGAP",
                             save = FALSE
                             )
 
@@ -313,7 +324,7 @@ GSTX_tree <- visualize_tree(tree = GSTX,
                             tiplabels = FALSE, 
                             tip_label_size = 6,
                             branch_length = FALSE,
-                            reference1 = "AGAP",
+                            references = "AGAP",
                             save = FALSE
                             )
 
@@ -331,21 +342,27 @@ Figure5 <- multipanel(Figure5A,
                       horizontal = FALSE
                      )
 
-
 Figure_S7 <- visualize_tree(tree = GST_tree,
                             form = "circular", 
                             tiplabels = TRUE,
-                            pattern = names(group_colors),
-                            tip_label_colors = group_colors, 
+                            color = group_colors,
+                            shape = group_shapes,
+                            tip_shape_size = 0.8,
+                            references = "AGAP",
+                            tip_label_size = 1.5,
                             bootstrap_numbers = FALSE,
                             bootstrap_circles = TRUE,
-)
+                            bootstrap_circle_size = 0.8,
+                            bootstrap_legend = TRUE,
+                            save = TRUE,
+                            output = "Figure_S7_309_GSTs_phylogeny.svg"
+                           )
 
 
 #======================================================== FIGURES 6A, 6B: Sand fly orthologs for Ace1 and ABCB Mdr Full Transporters ==========================================================#
 
-CCE_tree <- read_tree("/home/jason/Documents/sandflies/submission/Main_Figures/all_genes.fasta.trimmed.aln.phy.raxml.support.tree", 
-                      bootstrap_support = TRUE)
+# Read CCE tree
+CCE_tree <- read_tree("Supplementary_File_10.Sandfly_379_CCEs_plus_Agambiae.nwk", bootstrap_support = TRUE)
 
 # Extract subtree anchored by the An. gambiae Ace1(AGAP001356) and Ace2(AGAP00466)
 ACE <- extract_subtree(CCE_tree, 
@@ -368,12 +385,48 @@ ACE_tree <- visualize_tree(tree = ACE,
                            tip_label_size = 3,
                            clades = clade_labs,
                            save = FALSE,
-                           reference = "AGAP")
+                           references = "AGAP")
+
+# Visualize UGT tree
+Figure_S12 <- visualize_tree(tree = "Supplementary_File_12.Sandfly_214_UGTs_plus_Agambiae.nwk",
+                             form = "circular", 
+                             tiplabels = TRUE,
+                             color = group_colors,
+                             tip_shape_size = 0.8,
+                             references = "AGAP",
+                             mappings_legend = FALSE,
+                             tip_label_size = 1.5,
+                             bootstrap_numbers = FALSE,
+                             bootstrap_circles = TRUE,
+                             bootstrap_circle_size = 0.8,
+                             bootstrap_legend = FALSE,
+                             save = TRUE,
+                             output = "Figure_S12_214_UGTs_phylogeny.svg"
+                            )
 
 # Visualize ABCB FT tree with color/shape species mappings and bootstrap colored circles
-ABCB <- read_tree("abcbs.nwk")
+ABC_tree <- read_tree("Supplementary_File_14.Sandfly_561_ABC_transporters_plus_Agambiae.nwk")
 
-node_ids(ABCB, pattern = "Dmel")
+Figure_S14 <- visualize_tree(tree = ABC_tree,
+                             form = "circular", 
+                             tiplabels = TRUE,
+                             color = group_colors,
+                             tip_shape_size = 0.8,
+                             references = "AGAP",
+                             mappings_legend = FALSE,
+                             tip_label_size = 1.5,
+                             bootstrap_numbers = FALSE,
+                             bootstrap_circles = TRUE,
+                             bootstrap_circle_size = 0.8,
+                             bootstrap_legend = FALSE,
+                             save = TRUE,
+                             output = "Figure_S14_ABC_phylogeny.svg"
+                            )
+
+# Visualize ABCB FT tree with color/shape species mappings and bootstrap colored circles
+ABCB_tree <- read_tree("Supplementary_File_16.Sandfly_ABCB_transporters_plus_Agambiae_Dmel.nwk", bootstrap_support = TRUE)
+
+node_ids(ABCB_tree, pattern = "Dmel")
 
 clade_labs <- c("Mdr49" = 54, 
                 "Mdr65" = 67,
@@ -415,8 +468,8 @@ visualize_msa <- function(aln_filename, range, output_name = "MSA") {
 }
 
 # Call the function with the specified alignment file("ace1.aln") and range(c(250, 300))
-L995 <- visualize_msa(aln_filename = "VGSC_orthologs.aln", range = c(1021, 1030))
-N1570 <- visualize_msa(aln_filename = "VGSC_orthologs.aln", range = c(1604, 1614))
+L995 <- visualize_msa(aln_filename = "Supplementary_File_17.Sandfly_11_VGSC_orthologs_plus_Agambiae.aln", range = c(1021, 1030))
+N1570 <- visualize_msa(aln_filename = "Supplementary_File_17.Sandfly_11_VGSC_orthologs_plus_Agambiae.aln", range = c(1604, 1614))
 
 Figure6C <- multipanel(L995, 
                        N1570, 
