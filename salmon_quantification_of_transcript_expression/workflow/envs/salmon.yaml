@@ -1,0 +1,24 @@
+name: salmon
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - salmon
+    - r-essentials
+    - r-ggplot2
+    - r-limma
+    - r-voom
+    - r-edgeR
+    - r-dplyr
+    - r-magrittr
+    - r-stringr
+    - r-ggplot2
+    - r-ggfortify
+    - r-ggthemes
+    - r-ggrepel
+    - r-stringi
+    - r-tidyverse
+
+env:
+  PATH:
+    - scripts/

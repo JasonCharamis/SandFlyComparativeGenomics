@@ -1,0 +1,123 @@
+import os
+import re
+import subprocess
+import itertools
+
+data_dir = config['data_dir']
+
+samples = config['samples']
+
+## create comparisons based on sample names ##
+groups = [re.sub("\d+$|_\d+$","",i) for i in samples]
+groups = list(set(groups))
+
+def all_pairs (x):
+    samp = (s for s in x)
+    comparisons = {}
+    
+    for sample1, sample2 in itertools.combinations(samp, 2):
+        comparisons[str(sample1+"_"+sample2)]=str(sample1+"_vs_"+sample2)   
+    return list(comparisons.values())                   
+
+de_subset = all_pairs(groups)
+
+
+rule all:
+    input:
+        expand("edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.xlsx",
+               de_subset=de_subset,
+               log2FC_cutoff=config['log2FC_cutoff'])
+
+rule index:
+    input: config['fasta']
+    output: directory("{species}.salmon.index")
+    conda: "envs/salmon.yaml"
+    shell: """ salmon index -t {input} -i {output} --keepDuplicates """
+
+    
+rule selective_alignment:
+    input: "{samples}_1.trimmed.fastq.gz", "{samples}_2.trimmed.fastq.gz"
+    output: directory("{samples}.salmon.quants")
+    conda: "envs/salmon.yaml"
+    params:
+        threads=config['mapping_threads']
+    shell: """ salmon quant -i {species}.salmon.index 
+    	       	      	    -l A -1 {input[0]} -2 {input[1]} 
+			    --threads {params.threads} 
+			    --validateMappings 
+			    -o {output} """
+
+rule quantmerge:
+    input: expand("{sample}/quant.sf", sample=samples)
+    output:
+        counts="counts.mod.txt",
+        tpm="all.genes.tpm.tsv",
+        samples_list="samples.list"
+    conda: "envs/salmon.yaml"
+    shell: """ salmon quantmerge --quants {input} --column numreads --output {output.counts} &&
+               salmon quantmerge --quants {input} --column TPM --output {output.tpm} &&
+               perl scripts/counts_to_samples.pl {output.tpm} > {output.samples_list} """
+
+rule PCA:
+    input: tpm="all.genes.tpm.tsv"
+    output: pca="PCA.svg"
+    conda: "envs/salmon.yaml"
+    shell: """ Rscript pca.R {input.tpm} """
+
+
+rule make_directories:
+    input:
+        counts_file="counts.mod.txt",
+        samples_list="samples.list",
+        pca="PCA.svg"
+    output: 'chkp'
+    shell: """ mkdir edgeR &&
+               cd edgeR &&
+               mkdir 01_run_DE_analysis &&
+               mkdir 02_analyze_DE &&
+               cd ../ &&
+               cp results/counts.mod.txt edgeR/01_run_DE_analysis/ &&
+               cp {samples_list} edgeR/01_run_DE_analysis/ &&
+               touch chkp """
+
+
+rule run_DE_analysis:
+    input:
+        counts_file="counts.mod.txt",
+        samples_list="samples.list",
+        chkp='chkp'
+    output: 'edgeR/chkp01'
+    shell: """ cd edgeR/01_run_DE_analysis &&
+               perl scripts/run_DE_analysis.pl --matrix ../../../{input.counts_file} --method edgeR --samples_file ../../results/{input.samples_list} &&
+               cd ../ &&
+               touch chkp01 """
+
+
+rule analyze_DE:
+    input: 'edgeR/chkp01'
+    output: 'edgeR/chkp02'
+    params: DE_cutoff = config['log2FC_cutoff']
+    shell: """ cd edgeR/02_analyze_DE &&
+               ln -s ../01_run_DE_analysis/edgeR.*/counts.mod.txt* . &&
+               perl scripts/analyze_diff_expr.pl --matrix ../../results/counts.mod.txt --samples ../01_run_DE_analysis/samples.list -P 1e-3 -C {params.DE_cutoff} &&
+               cd ../ &&
+               touch chkp02 &&
+               rm ../chkp ../{input} ../{output} """
+
+
+rule rename:
+    input: 'edgeR/02_analyze_DE/counts.mod.txt.{de_subset}.edgeR.DE_results.P1e-3_{log2FC_cutoff}.DE.subset'
+    output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.subset'
+    shell: " perl scripts/rename.pl {input} "
+
+
+rule reverse_sort:
+     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.tsv'
+     output: sorted = 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.tsv'            
+     shell: """ perl scripts/reverse_sort.pl {input} > {output.sorted} """
+
+
+rule tsv2xlsx:
+     input: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.tsv'
+     output: 'edgeR/02_analyze_DE/{de_subset}.P1e-3_{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.xlsx'
+     shell: """ python3 scripts/tsv2xlsx.py {input} """
