@@ -201,6 +201,16 @@ ggsave(plot = Figure_3,
        filename = "Figure_3.svg",
        dpi = 600)
 
+
+# Figure_S5: Compute gene counts across Ph. papatasi and Lu. longipalpis genomes
+source("count_genes_sliding_window.R")
+
+Figure_S5 <- count_genes_sliding_window(coordinate_file = "P450_genes_in_sandfly_genomes.gff3",
+                                        sliding_window_size = 50000)
+ggsave(plot = Figure_S5,
+       filename = "Figure_S5.svg",
+       dpi = 600)
+
 #=================================== FIGURE 4: CYP4G347 is probably the functional ortholog of CYP4G17 =====================================#
 
 # Figure_4A: Sand flies have two CYP4G17 orthologs
