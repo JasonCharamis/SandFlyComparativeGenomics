@@ -205,7 +205,7 @@ ggsave(plot = Figure_3,
 # Figure_S5: Compute gene counts across Ph. papatasi and Lu. longipalpis genomes
 source("count_genes_sliding_window.R")
 
-Figure_S5 <- count_genes_sliding_window(coordinate_file = "P450_genes_in_sandfly_genomes.gff3",
+Figure_S5 <- count_genes_sliding_window(coordinate_file = "P450_genes_in_sandfly_genomes.bed",
                                         sliding_window_size = 50000)
 ggsave(plot = Figure_S5,
        filename = "Figure_S5.svg",
