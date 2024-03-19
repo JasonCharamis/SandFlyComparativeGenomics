@@ -127,7 +127,7 @@ Figure_S4 <- visualize_tree(tree = P450_tree,
 
 
 # Figure_2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
-source("complex_heatmap.R")
+source("libraries/complex_heatmap.R")
 
 Figure_2B <- complex_heatmap("P450_gene_counts.tsv", 
                              reordered_rows = c(2:7,1,8:58),
@@ -183,7 +183,7 @@ Figure_3A <- multipanel(CYP6ACJ_tree,
 
 
 # Figure_3B: P450 clusters in Ph. papatasi and Lu. longipalpis genomes
-source("gggenomes_lib.R")
+source("libraries/gggenomes_lib.R")
 
 CYP6ACJ_cluster <- visualize_clusters(gff3_file = "CYP6ACJ.clusters.gff3")
 CYP9JR_cluster <- visualize_clusters(gff3_file = "CYP9JR.clusters.gff3")
@@ -203,7 +203,7 @@ ggsave(plot = Figure_3,
 
 
 # Figure_S5: Compute gene counts across Ph. papatasi and Lu. longipalpis genomes
-source("count_genes_sliding_window.R")
+source("libraries/count_genes_sliding_window.R")
 
 Figure_S5 <- count_genes_sliding_window(coordinate_file = "P450_genes_in_sandfly_genomes.bed",
                                         sliding_window_size = 50000)
@@ -236,7 +236,7 @@ ggsave(plot = Figure_4A,
 
 
 # Figure_4B: Violin plots with expression of P450 gene expression across the 11 sand fly species
-source("violin_plots.R")
+source("libraries/violin_plots.R")
 
 CYP4G346 <- extract_subtree(CYP4G17, 
                             tip1 = "duboscqi_TRINITY_DN414",

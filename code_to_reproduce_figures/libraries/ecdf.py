@@ -37,6 +37,5 @@ def ecdf(values, title, show):
         plt.show()
 
 
-
 if __name__ == '__main__':    
     ecdf (values = args.data, title = args.title, show = args.show)
