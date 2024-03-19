@@ -120,11 +120,16 @@ Figure_S4 <- visualize_tree(tree = P450_tree,
                             shape = group_shapes,
                             references = c("papatasi", "longipalpis", "Agam"),
                             tip_label_size = 1,
+                            tip_shape_size = 0.8,
                             tip_label_colors = group_colors, 
                             bootstrap_numbers = FALSE,
                             bootstrap_circles = TRUE,
-                            save = FALSE)
+                            bootstrap_circle_size = 0.7,
+                            save = TRUE,
+                            output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
 
+
+Figure_S4
 
 # Figure_2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
 source("libraries/complex_heatmap.R")
@@ -331,8 +336,7 @@ Figure_S7 <- visualize_tree(tree = GST_tree,
                             bootstrap_circle_size = 0.8,
                             bootstrap_legend = TRUE,
                             save = TRUE,
-                            output = "Figure_S7_309_GSTs_phylogeny.svg")
-
+                            output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S7_309_GSTs_phylogeny.svg")
 
 # Visualize UGT tree
 Figure_S9 <- visualize_tree(tree = "Supplementary_File_11.Sandfly_214_UGTs_plus_Agambiae.nwk",
@@ -348,7 +352,8 @@ Figure_S9 <- visualize_tree(tree = "Supplementary_File_11.Sandfly_214_UGTs_plus_
                             bootstrap_circle_size = 0.8,
                             bootstrap_legend = FALSE,
                             save = TRUE,
-                            output = "Figure_S9_UGTs_phylogeny.svg")
+                            output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S9_UGTs_phylogeny.svg")
+
 
 # Read CCE tree
 CCE_tree <- read_tree("Supplementary_File_13.Sandfly_379_CCEs_plus_Agambiae.nwk", bootstrap_support = TRUE)
@@ -397,6 +402,7 @@ Figure_S13 <- visualize_tree(tree = ABC_tree,
                              form = "circular", 
                              tiplabels = TRUE,
                              color = group_colors,
+                             shape = group_shapes,
                              tip_shape_size = 0.8,
                              references = "AGAP",
                              mappings_legend = FALSE,
@@ -406,7 +412,9 @@ Figure_S13 <- visualize_tree(tree = ABC_tree,
                              bootstrap_circle_size = 0.8,
                              bootstrap_legend = FALSE,
                              save = TRUE,
-                             output = "Figure_S13_ABC_phylogeny.svg")
+                             output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S13_ABC_phylogeny.svg")
+
+Figure_S13
 
 # Visualize ABCB FT tree with color/shape species mappings and bootstrap colored circles
 ABCB_tree <- read_tree("Supplementary_File_16.Sandfly_ABCB_transporters_plus_Agambiae_Dmel.nwk", bootstrap_support = TRUE)
