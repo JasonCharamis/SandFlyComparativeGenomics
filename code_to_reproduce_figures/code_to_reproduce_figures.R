@@ -27,6 +27,8 @@ ggsave(plot = Figure_1A,
 
 
 # Figure_1B: Stacked barplots with orthogroup representation - Input is the orthology_results_for_R.txt produced by classify_orthogroups.pl
+library(ggthemes)
+
 orthology_counts <- read.delim("Supplementary_File_5.Orthology_results_for_ggplot.txt", header = T)
 
 order_vector <- c(118:126, 136:144, 163:171, 73:81, 
@@ -37,12 +39,12 @@ orthology_counts <- orthology_counts[order_vector,]
 
 species_order <- unique(orthology_counts$Species)
 orthology_counts$Species <- factor(orthology_counts$Species, 
-                                   levels = unique_order)  # Set custom levels for the factor
+                                   levels = species_order)  # Set custom levels for the factor
 
 stack_order <- rev(unique(orthology_counts$Type))[c(1,4:7,3,2,8,9)]
 orthology_counts$Type <- factor(orthology_counts$Type, levels = stack_order)
 
-Figure_1B <- ggplot(orthology_counts, aes(orthology_counts =Species, y = Number_of_Genes, fill = Type)) + 
+Figure_1B <- ggplot(orthology_counts, aes(x=Species, y = Number_of_Genes, fill = Type)) + 
              geom_bar(position = "stack", stat = "identity") +
              scale_fill_manual(values = rev(c("darkblue", "skyblue2", "lightblue2", "orange1", "brown3", "salmon", "yellow2", "green4", "grey"))) +
              coord_flip() + theme_few() + scale_color_manual(values="black")
@@ -98,7 +100,8 @@ group_colors <- c(arabicus = "purple",
                   papatasi =  "darkred",
                   schwetzi  = "blue",
                   sergenti =  "orange",
-                  tobbi =  "red")
+                  tobbi =  "red",
+                  AGAP = "black")
 
 group_shapes <- c(arabicus = "circle",
                   argentipes = "circle",
@@ -112,21 +115,22 @@ group_shapes <- c(arabicus = "circle",
                   sergenti = "circle",
                   tobbi = "circle")
 
-
+#Figure_S4 <- 
 # Figure_S4: Visualize P450 tree with all tip labels
-Figure_S4 <- visualize_tree(tree = P450_tree,
+visualize_tree(tree = P450_tree,
                             form = "circular", 
                             color = group_colors,
                             shape = group_shapes,
-                            references = c("papatasi", "longipalpis", "Agam"),
-                            tip_label_size = 1,
+                            references = c("papatasi", "Agam"),
+                            tip_label_size = 2,
                             tip_shape_size = 0.8,
                             tip_label_colors = group_colors, 
                             bootstrap_numbers = FALSE,
                             bootstrap_circles = TRUE,
                             bootstrap_circle_size = 0.7,
-                            save = TRUE,
-                            output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
+                            #tree_width_limits = c(300, 600, 900),
+                            save = FALSE)
+                            #output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
 
 
 Figure_S4
@@ -339,20 +343,23 @@ Figure_S7 <- visualize_tree(tree = GST_tree,
                             output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S7_309_GSTs_phylogeny.svg")
 
 # Visualize UGT tree
-Figure_S9 <- visualize_tree(tree = "Supplementary_File_11.Sandfly_214_UGTs_plus_Agambiae.nwk",
+UGT_tree <- read_tree("Supplementary_File_11.Sandfly_214_UGTs_plus_Agambiae.nwk")
+
+Figure_S9 <- visualize_tree(tree = UGT_tree,
                             form = "circular", 
                             tiplabels = TRUE,
-                            color = group_colors,
-                            tip_shape_size = 0.8,
-                            references = "AGAP",
+                            tip_label_colors = group_colors,
+                            pattern_id = names(group_colors),
+                            tip_shape_size = 2.5,
                             mappings_legend = FALSE,
-                            tip_label_size = 1.5,
+                            tip_label_size = 2,
                             bootstrap_numbers = FALSE,
                             bootstrap_circles = TRUE,
                             bootstrap_circle_size = 0.8,
                             bootstrap_legend = FALSE,
                             save = TRUE,
                             output = "~/Documents/sandflies/submission/supplemental_information/Supplementary_Figures/Figure_S9_UGTs_phylogeny.svg")
+
 
 
 # Read CCE tree
@@ -371,6 +378,7 @@ Figure_S11 <- visualize_tree(CCE_tree,
                              bootstrap_circle_size = 0.8,
                              save = TRUE,
                              output = "Figure_S11_CCE_phylogeny.svg")
+
 
 # Extract subtree anchored by the An. gambiae Ace1(AGAP001356) and Ace2(AGAP00466)
 ACE_tree <- extract_subtree(CCE_tree, 
