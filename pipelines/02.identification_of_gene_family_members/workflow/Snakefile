@@ -1,41 +1,51 @@
 
-species = { f[:-21] for f in os.listdir("/home/iasonas/genomics/sandflies/sandfly_transcriptomes/functional_annotation/genesets/") if f.endswith(".final_genesets.pep") }
+species = { f[:-21] for f in os.listdir("") if f.endswith(".final_genesets.pep") }
 
 configfile: 'config/config.yaml'
 
-reference_dataset=config['reference_dataset']
+reference_dataset=['reference_dataset']
 pfam_db=config['pfam_db']
 pfam_domain_id=config['pfam_domain_id']
 
 rule all:
      input:
-        expand('sandflies/sandfly_transcriptomes/functional_annotation/genesets/{species}.dmnd', species = species),
-	expand('{reference_dataset}.VS.{species}.fmt6', species = species ),
-	expand ('{species}.{reference_dataset}.blast.pfam.unigene_id', species = species ),
-	expand ('{species}.{reference_dataset}.extracted.from_{species}.blast.pfam.id.pep.fasta', species = species )
+          expand ('{species}.{reference_dataset}.extracted.from_{species}.blast.pfam.id.pep.fasta', species = species )
 	
 rule makedb:
-     input: '/home/iasonas/genomics/sandflies/sandfly_transcriptomes/functional_annotation/genesets/{species}.final_genesets.pep'
-     output: '/home/iasonas/genomics/sandflies/sandfly_transcriptomes/functional_annotation/genesets/{species}.dmnd'
+     input: '{species}.final_genesets.pep'
+     output: '{species}.dmnd'
      conda: 'envs.yaml'
      shell: " diamond makedb --in {input} --db {output} "
 
 rule diamond:
-     input: '/home/iasonas/genomics/sandflies/sandfly_transcriptomes/functional_annotation/genesets/{species}.dmnd'
+     input: '{species}.dmnd'
      output: '{reference_dataset}.VS.{species}.fmt6'
      conda: 'envs.yaml'
-     shell: " diamond blastp --query {reference_dataset} --db {input} --evalue 1E-5 --ultra-sensitive --outfmt 6 --out {output} "
+     threads: config['diamond_threads']
+
+     shell: " diamond blastp --query {reference_dataset} 
+                             --db {input} \
+                             --evalue 1E-5 \
+                             --ultra-sensitive \
+                             --outfmt 6 \
+                             --out {output} \
+                             --threads {threads} "
 
 rule best_hit:
      input: rules.diamond.output
      output: best_hit = str(rules.diamond.output) + '.b1'
              best_hit_id = str(rules.diamond.output) + '.b1.unigenes_id'
-     shell: "python3 scripts/fmt6.py --nhits 1 {input} > {output.best_hit} && cut -f2 {output.best_hit} > {output.best_hit_id} "
+
+     shell: " python3 scripts/fmt6.py --nhits 1 {input} > {output.best_hit} && \ 
+              cut -f2 {output.best_hit} > {output.best_hit_id} "
 
 rule hmmsearch:
-     input: '/home/iasonas/genomics/sandflies/sandfly_transcriptomes/functional_annotation/genesets/{species}.final_genesets.pep'
+     input: '{species}.final_genesets.pep'
      output: '{species}.hmmsearch.out'
-     shell: "hmmsearch --cpu 20 --domtblout {output} {pfam_db} {input}"
+     conda: 'envs/envs.yaml'
+     threads: config['hmmer_threads']
+     shell: "hmmsearch --cpu {threads} \
+                       --domtblout {output} {pfam_db} {input}"
 
 rule domain:
      input: '{species}.hmmsearch.out'
@@ -49,8 +59,10 @@ rule common_blastp_pfam:
      shell: " fgrep -f {input.blast} {input.pfam} | sort -u > {output} "
 
 rule extract_sequence:
-     input: '/home/iasonas/genomics/sandflies/sandfly_transcriptomes/functional_annotation/genesets/{species}.final_genesets.pep',
+     input: '{species}.final_genesets.pep',
             '{species}.blast.pfam.id'
      output: '{species}.{reference_dataset}.extracted.from_{species}.blast.pfam.id.pep.fasta'
-     shell: " python3 scripts/fastalib.py --fasta {species}.{reference_dataset}.pep.fasta --extract --sequences {input.unigenes_id} "
+     shell: " python3 scripts/fastalib.py --fasta {species}.{reference_dataset}.pep.fasta \ 
+                                          --extract \ 
+                                          --sequences {input.unigenes_id} "
 

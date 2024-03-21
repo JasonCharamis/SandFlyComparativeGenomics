@@ -15,7 +15,7 @@ def trinity_samples_file(samples, data_dir):
 
 configfile: 'config.yaml'
             
-data_directory = config['data_directory']
+data_directory = ['data_directory']
 samples = [str(file) for file in sorted([f[:-11] for f in os.listdir(data_directory) if f.endswith('.fastq.gz')])]
 trinity_samples_file(samples, data_directory)
 species = samples[:-3]
@@ -35,20 +35,23 @@ rule make_dir:
 rule trinity:
      input: species_dir = rules.make_dir.output, 
             species_samples = '{species}.samples'
+     output: trinity_fasta = '{species}/trinity_out_dir/trinity_out_dir.Trinity.fasta'
 
-     output: trinity_fasta = '{species}/trinity_out_dir/trinity_out_dir.Trinity.fasta'   
+     conda: "envs/envs.yaml"
      threads: config['trinity_threads']
      shell: """ trinity \
      	    	--seqType fq \
-		--SS_lib_type RF \
-		--max_memory 350G \
-		--samples_file {input.species_samples} \
-		--CPU {threads} \
-		--trimmomatic """
+                --SS_lib_type RF \
+                --max_memory 350G \
+                --samples_file {input.species_samples} \
+                --CPU {threads} \
+                --trimmomatic """
      
 rule rnaspades:
      input: '{species}/trinity_out_dir/trinity_out_dir.Trinity.fasta'                      
      output: '{species}_spadesrna_outdir/hard_filtered_transcripts.fasta'
+     
+     conda: "envs/envs.yaml"
      threads: config['rnaspades_threads']
      shell: """ cat {species}/trinity_out_dir/*_1.fastq.gz.PwU.qtrim.fq > {species}_1.all.trimmed.fastq && \
        	    	cat {species}/trinity_out_dir/*_2.fastq.gz.PwU.qtrim.fq > {species}_2.all.trimmed.fastq && \
@@ -66,16 +69,27 @@ rule evigene:
          spades_hard_filtered ='{species}_spadesrna_outdir/hard_filtered_transcripts.fasta'
      output:
          okay_transcripts= 'evigene/trinity_unfiltered_spadeshard/okayset/{species}.trinityunfiltered.spadeshard.okay.tr'
+
+     conda: "envs/envs.yaml"
      threads: config['evigene_threads']
      shell: """ cat {input.trinity_transcripts} {input.spades_hard_filtered} > {species}.trinityunfiltered.spadeshard.fasta && \
-                perl ~/Programs/evigene/scripts/prot/tr2aacds.pl -cdnaseq {species}.trinityunfiltered.spadeshard.fasta -NCPU {threads} -logfile """
+
+                perl ~/miniconda3/opt/evigene-23.7.15/scripts/prot/tr2aacds.pl -cdnaseq {species}.trinityunfiltered.spadeshard.fasta -NCPU {threads} -logfile """
      
                       
 rule transdecoder_with_blast_and_pfam_evidence:
      input: '{species}.trinityunfiltered.spadeshard.fasta'
      output: '{species}.trinityunfiltered.spadeshard.okay.tr.transdecoder.pep'
-     shell: """ cd {species}/functional_annotation && transDecoder.LongOrfs -t ../evigene/trinity_unfiltered_spadeshard/okayset/trinityunfiltered.spadeshard.okay.tr && \
+
+     conda: "envs/envs.yaml"
+     shell: """ cd {species}/functional_annotation && \
+
+                TransDecoder.LongOrfs -t ../evigene/trinity_unfiltered_spadeshard/okayset/trinityunfiltered.spadeshard.okay.tr && \
+
                 diamond blastp --query trinityunfiltered.spadeshard.okay.tr.transdecoder_dir/longest_orfs.pep --db swissprot_Metazoa.dmnd --outfmt 6 --out {species}.longest_orfs.trinityunfiltered.spadeshard.okay.transdecoder.pep.vs.uniref50.fmt6 --more-sensitive --threads 20 && \
+
                 hmmsearch --cpu 30 --domtblout {species}.longest.orfs.pfam.domtblout Pfam-A.hmm trinityunfiltered.spadeshard.okay.tr.transdecoder_dir/longest_orfs.pep && \
+
                 TransDecoder.Predict -t ../evigene/trinity_unfiltered_spadeshard/okayset/trinityunfiltered.spadeshard.okay.tr --retain_pfam_hits {species}.longest.orfs.pfam.domtblout --retain_blastp_hits {species}.longest_orfs.trinityunfiltered.spadeshard.okay.transdecoder.pep.vs.uniref50.fmt6 && \
+
                 mv trinityunfiltered.spadeshard.okay.tr.transdecoder.pep {species}.trinityunfiltered.spadeshard.okay.tr.transdecoder.pep && cd ../ """

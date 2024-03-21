@@ -1,0 +1,12 @@
+
+name: GeneFamilyIdentification
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - trinity=2.15.0
+    - spades=3.15.5
+    - evigene
+    - transdecoder=5.5.0
+    - hmmer=3.3.2
+    - diamond=2.0.15

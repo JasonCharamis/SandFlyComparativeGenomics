@@ -11,22 +11,18 @@ samples = config['samples']
 groups = [re.sub("\d+$|_\d+$","",i) for i in samples]
 groups = list(set(groups))
 
-def all_pairs (x):
+def all_pairs(x):
     samp = (s for s in x)
     comparisons = {}
     
     for sample1, sample2 in itertools.combinations(samp, 2):
-        comparisons[str(sample1+"_"+sample2)]=str(sample1+"_vs_"+sample2)   
+        comparisons[str(sample1+"_"+sample2)] = str(sample1+"_vs_"+sample2)   
     return list(comparisons.values())                   
 
 de_subset = all_pairs(groups)
 
-
 rule all:
     input:
-        expand("edgeR/02_analyze_DE/{de_subset}.P1e-3_C{log2FC_cutoff}.DE.annotated.plus_orthology.sorted.xlsx",
-               de_subset=de_subset,
-               log2FC_cutoff=config['log2FC_cutoff'])
 
 rule index:
     input: config['fasta']
@@ -34,7 +30,6 @@ rule index:
     conda: "envs/salmon.yaml"
     shell: """ salmon index -t {input} -i {output} --keepDuplicates """
 
-    
 rule selective_alignment:
     input: "{samples}_1.trimmed.fastq.gz", "{samples}_2.trimmed.fastq.gz"
     output: directory("{samples}.salmon.quants")
@@ -42,10 +37,10 @@ rule selective_alignment:
     params:
         threads=config['mapping_threads']
     shell: """ salmon quant -i {species}.salmon.index 
-    	       	      	    -l A -1 {input[0]} -2 {input[1]} 
-			    --threads {params.threads} 
-			    --validateMappings 
-			    -o {output} """
+                    -l A -1 {input[0]} -2 {input[1]} 
+                    --threads {params.threads} 
+                    --validateMappings 
+                    -o {output} """
 
 rule quantmerge:
     input: expand("{sample}/quant.sf", sample=samples)
@@ -54,6 +49,5 @@ rule quantmerge:
         tpm="all.genes.tpm.tsv",
         samples_list="samples.list"
     conda: "envs/salmon.yaml"
-    shell: """ salmon quantmerge --quants {input} --column numreads --output {output.counts} &&
-               salmon quantmerge --quants {input} --column TPM --output {output.tpm} &&
-               perl scripts/counts_to_samples.pl {output.tpm} > {output.samples_list} """
+    shell: """ salmon quantmerge --quants {input} --column numreads --output {output.counts} && \
+               salmon quantmerge --quants {input} --column TPM --output {output.tpm} """
