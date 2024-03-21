@@ -80,12 +80,15 @@ highlight_nodes = c("MITO" = 1702,
 
 # Generate the highlighted tree with colors corresponding to the different clans
 Figure_2A <- highlight_tree(P450_tree,
-                           highlight_nodes = highlight_nodes, 
-                           colors = c("CYP4"= "orange2",
-                                      "CYP3" = "green4",
-                                      "MITO" = "lightblue2",
-                                      "CYP2" = "gold")
-                           )
+                            form = "fan",
+                            highlight_nodes = highlight_nodes, 
+                            colors = c("CYP4"= "orange2",
+                                       "CYP3" = "green4",
+                                       "MITO" = "lightblue2",
+                                       "CYP2" = "gold")
+                            )
+
+visualize_tree(P450_tree, color = group_colors, shape = group_shapes, form = "circular", references = "Agam")
 
 # Color mappings for each sand fly species
 group_colors <- c(arabicus = "purple",
@@ -98,8 +101,7 @@ group_colors <- c(arabicus = "purple",
                   papatasi =  "darkred",
                   schwetzi  = "blue",
                   sergenti =  "orange",
-                  tobbi =  "red",
-                  AGAP = "black")
+                  tobbi =  "red")
 
 group_shapes <- c(arabicus = "circle",
                   argentipes = "circle",
@@ -184,7 +186,6 @@ CYP9JR_tree <- visualize_tree(tree = CYP9JR,
 Figure_3A <- multipanel(CYP6ACJ_tree, 
                         CYP9JR_tree, 
                         horizontal = TRUE)
-
 
 # Figure_3B: P450 clusters in Ph. papatasi and Lu. longipalpis genomes
 source("libraries/gggenomes_lib.R")
@@ -388,6 +389,9 @@ print_internal_nodes(ACE_tree, pattern = "AGAP")
 clade_labs <- c("Ace1" = 37, 
                 "Ace2" = 26)
 
+ACE_tree@
+
+
 # Visualize the subtree with the Ace1 and Ace2 orthologs, with color/shape species mappings and bootstrap colored circles and AGAP-matching IDs are reference
 Figure_6A <- visualize_tree(tree = ACE_tree, 
                             color = group_colors, 
@@ -399,6 +403,7 @@ Figure_6A <- visualize_tree(tree = ACE_tree,
                             clades = clade_labs,
                             save = FALSE,
                             references = "AGAP")
++
 
 # Visualize ABCB FT tree with color/shape species mappings and bootstrap colored circles
 ABC_tree <- read_tree("Supplementary_File_15.Sandfly_561_ABC_transporters_plus_Agambiae.nwk")

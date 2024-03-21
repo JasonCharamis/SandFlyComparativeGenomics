@@ -1,14 +1,17 @@
 import os
 import re
 import subprocess
-import itertools
+from collections import defaultdict
 
-samples_file = config['samples_file']
-samples_dict = {}
+declaration_file = config['declaration_file']
+samples_dict = defaultdict(list)
 
-fasta = config['fasta']
 
-with open(samples_file) as f:
+# Declaration file has the following structure
+# Group_Name	Sample_Name	Fastq_File1	Fastq_File2  Index_File
+# Group1        Sample1        fastq1_1.fastq.gz fastq1_2.fastq.gz   index1
+
+with open(declaration_file) as f:
     first_line = True
 
     for line in f:
@@ -17,28 +20,29 @@ with open(samples_file) as f:
         
         columns = line.strip().split("\t")
 
-        if len(columns) != 4:
-            raise ValueError("Invalid sample list format. Sample list should be of format: group_name\tsample_name\tfastq_filename1\tfastq_filename2")
+        if len(columns) != 5:
+            raise ValueError("Invalid sample list format. Sample list should be of format: group_name\tsample_name\tfastq_filename1\tfastq_filename2\tindex_file1")
         
         group = columns[0]
         sample = columns[1]
         filename1 = columns[2]
         filename2 = columns[3]
+        index = columns[4]
 
         # Check if sample name already exists in the dictionary, if not, add it
         if sample not in samples_dict:
-            samples_dict[sample] = {'group': group, 'filename1': filename1, 'filename2': filename2}
+            samples_dict[sample] = {'group': group, 'filename1': filename1, 'filename2': filename2, 'index': index}
 
             with open ( 'samples.list', "w" ) as file: # Write sample.list file
                 print ( f"{sample}\t{group}", file=file )
         else:
             pass
-
+        
 
 # Create wildcards for group and sample names
 groups = list(set(sample_info['group'] for sample_info in samples_dict.values()))
 samples = [sample_info for sample_info in samples_dict.keys()]
-
+index_files = [sample_info['index'] for sample_info in samples_dict.values()]
 
 ## ====================================================== ANALYSIS ====================================================== ##
 
@@ -46,38 +50,43 @@ rule all:
     input:
         expand ("{group}.tpm.tsv", group = groups ),
         expand ("{group}.counts.txt", group = groups )
-    
+
 rule index:
-    input: {fasta}
-    output: directory("{fasta}.salmon.index")
+    input: fasta = "{index_files}"
+    output: indexed = directory("{index_files}.salmon.index")
     conda: "envs/salmon.yaml"
     shell: """ salmon index -t {input.fasta} -i {output} --keepDuplicates """
 
     
+# Perform alignment based on sample-to-index associations defined in sample_dict
 rule selective_alignment:
-    input: fastq1 = "{samples}_1.trimmed.fastq.gz",
-           fastq2 ="{samples}_2.trimmed.fastq.gz"
-    output: directory("{samples}.salmon.quants")
+    input: fastq1=lambda wildcards: f"{wildcards.samples}_1.trimmed.fastq.gz",
+           fastq2=lambda wildcards: f"{wildcards.samples}_2.trimmed.fastq.gz",
+           indexed=lambda wildcards: directory(f"{samples_dict[wildcards.samples]['index']}.salmon.index")
+    output: directory("{samples}.salmon")
     conda: "envs/salmon.yaml"
     threads: config['mapping_threads']
-    shell: """ salmon quant -i {groups}.salmon.index \
+    shell: """ salmon quant -i {input.indexed} \
     	       	      	    -l A -1 {input.fastq1} -2 {input.fastq2} \
 			    --threads {threads} \
 			    --validateMappings \
 			    -o {output} """
-    
-rule quantmerge:
-    input: expand("{sample}/quant.sf", sample=samples)
-    output: counts = "{groups}.counts.txt",
-            tpm = "{groups}.tpm.tsv"
-    params: groups = 
 
+
+# Merge quant files of samples which belong to the same group
+rule quantmerge:
+    input: expand("{sample}.salmon/quant.sf", sample=samples),
+           grouped_samples = lambda wildcards: f"{','.join([str(sample)+'.salmon/quant.sf' for sample in sample_dict.keys() if [[group in sample_dict[sample] for sample in sample_dict.keys()] for group in sample_dict['group']]}"
+
+    output: counts = lambda wildcards: f"{','.join([str(sample)+'.counts.txt' for sample in sample_dict.keys() if [[group in sample_dict[sample] for sample in sample_dict.keys()] for group in sample_dict['group']]}"
+            tpm = lambda wildcards: f"{','.join([str(sample)+'.tpm.tsv' for sample in sample_dict.keys() if [[group in sample_dict[sample] for sample in sample_dict.keys()] for group in sample_dict['group']]}"
+            
     conda: "envs/salmon.yaml"
-    message: "Merging counts and TPM values per sample"
-    shell: """ salmon quantmerge --quants {input} \
+    message: "Merging counts and TPM values per wildcards.samples"
+    shell: """ salmon quantmerge --quants {input.grouped_samples} \
                                  --column numreads \
                                  --output {output.counts} && \
     
-               salmon quantmerge --quants {input} \
+               salmon quantmerge --quants {input.grouped_samples} \
                                  --column TPM \
                                  --output {output.tpm} """
