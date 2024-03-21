@@ -61,9 +61,9 @@ open ( IN, $ARGV[0] ); ## Orthogroups.GeneCount.tsv
 open ( IN2, $ARGV[1] ); ## Orthogroups_UnassignedGenes.tsv
 open ( IN3, $ARGV[2] ); ## Orthogroups.txt
 
-open ( OUT0, ">orthology_distribution_for_R.txt" );
+open ( OUT0, ">Orthology_results_for_ggplot.txt" );
 open ( OUT1, ">OGs_per_category_per_species.txt" );
-open ( OUT2, ">orthology_distribution.tsv" );
+open ( OUT2, ">Orthology_Distribution.tsv" );
 
 ##=============================================================## PARSE THROUGH THE Orthogroups_Unassigned.tsv Orthogroups.txt FILES AND GET UNASSIGNED OG IDs ##==================================================##
 
