@@ -1,53 +1,99 @@
 import os
 import re
 import subprocess
-import itertools
 
-data_dir = config['data_dir']
+declaration_file = config['declaration_file']
+samples_dict = {}
 
-samples = config['samples']
+with open(declaration_file) as f:
+    first_line = True
 
-## create comparisons based on sample names ##
-groups = [re.sub("\d+$|_\d+$","",i) for i in samples]
-groups = list(set(groups))
+    for line in f:
+        if first_line: # Skip header line
+            continue
+        
+        columns = line.strip().split("\t")
 
-def all_pairs(x):
-    samp = (s for s in x)
+        if len(columns) != 5:
+            raise ValueError("Invalid sample list format. Sample list should be of format: group_name\tsample_name\tfastq_filename1\tfastq_filename2\tindex_filename")
+        
+        group = columns[0]
+        sample = columns[1]
+        filename1 = columns[2]
+        filename2 = columns[3]
+        index = columns[4]
+
+        # Check if sample name already exists in the dictionary, if not, add it
+        if sample not in samples_dict:
+            samples_dict[sample] = {'group': group, 'filename1': filename1, 'filename2': filename2, 'index': index}
+
+            with open ( 'samples.list', "w" ) as file: # Write sample.list file
+                print ( f"{sample}\t{group}", file=file )
+        else:
+            pass
+                
+
+# Create wildcards for group, sample names and index files
+groups = list(set(sample_info['group'] for sample_info in samples_dict.values()))
+samples = [sample_info for sample_info in samples_dict.keys()]
+index_files = [sample_info['index'] for sample_info in samples_dict.values()]
+
+# Create comparisons based on sample names
+def all_pairs (groups):
     comparisons = {}
     
-    for sample1, sample2 in itertools.combinations(samp, 2):
-        comparisons[str(sample1+"_"+sample2)] = str(sample1+"_vs_"+sample2)   
+    for group1, group2 in itertools.combinations(groups, 2):
+        comparisons[str(group1+"_"+group2)]=str(group1+"_vs_"+group2)   
+
     return list(comparisons.values())                   
 
-de_subset = all_pairs(groups)
+
+de_subset = all_pairs(group_names)
+
+
+## ====================================================== ANALYSIS ====================================================== ##
 
 rule all:
     input:
+        expand ("{group}.tpm.tsv", group = groups ),
+        expand ("{group}.counts.txt", group = groups )
 
 rule index:
-    input: config['fasta']
-    output: directory("{species}.salmon.index")
+    input: fasta = "{index_files}"
+    output: indexed = directory("{index_files}.salmon.index")
     conda: "envs/salmon.yaml"
-    shell: """ salmon index -t {input} -i {output} --keepDuplicates """
+    shell: """ salmon index -t {input.fasta} -i {output} --keepDuplicates """
 
+    
+# Perform alignment based on sample-to-index associations defined in sample_dict
 rule selective_alignment:
-    input: "{samples}_1.trimmed.fastq.gz", "{samples}_2.trimmed.fastq.gz"
-    output: directory("{samples}.salmon.quants")
+    input: fastq1=lambda wildcards: f"{wildcards.samples}_1.trimmed.fastq.gz",
+           fastq2=lambda wildcards: f"{wildcards.samples}_2.trimmed.fastq.gz",
+           indexed=lambda wildcards: directory(f"{samples_dict[wildcards.samples]['index']}.salmon.index")
+    output: directory("{samples}.salmon")
     conda: "envs/salmon.yaml"
-    params:
-        threads=config['mapping_threads']
-    shell: """ salmon quant -i {species}.salmon.index 
-                    -l A -1 {input[0]} -2 {input[1]} 
-                    --threads {params.threads} 
-                    --validateMappings 
-                    -o {output} """
+    threads: config['mapping_threads']
+    shell: """ salmon quant -i {input.indexed} \
+    	       	      	    -l A -1 {input.fastq1} -2 {input.fastq2} \
+			    --threads {threads} \
+			    --validateMappings \
+			    -o {output} """
 
+
+# Merge all quant files into  single file
 rule quantmerge:
-    input: expand("{sample}/quant.sf", sample=samples)
-    output:
-        counts="counts.mod.txt",
-        tpm="all.genes.tpm.tsv",
-        samples_list="samples.list"
+    input: quant_files = ",".join(expand("{sample}.salmon/quant.sf", sample=samples))
+
+    output: counts = "all_samples.counts.tsv",
+            tpm = "all_samples.tpm.tsv",
+            
     conda: "envs/salmon.yaml"
-    shell: """ salmon quantmerge --quants {input} --column numreads --output {output.counts} && \
-               salmon quantmerge --quants {input} --column TPM --output {output.tpm} """
+    message: "Merging counts and TPM values per wildcards.samples"
+    shell: """ salmon quantmerge --quants {input.quant_files} \
+                                 --column numreads \
+                                 --output {output.counts} && \
+    
+               salmon quantmerge --quants {input.quant_files} \
+                                 --column TPM \
+                                 --output {output.tpm} """
+    
