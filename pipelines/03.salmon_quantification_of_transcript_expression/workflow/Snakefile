@@ -38,18 +38,6 @@ groups = list(set(sample_info['group'] for sample_info in samples_dict.values())
 samples = [sample_info for sample_info in samples_dict.keys()]
 index_files = [sample_info['index'] for sample_info in samples_dict.values()]
 
-# Create comparisons based on sample names
-def all_pairs (groups):
-    comparisons = {}
-    
-    for group1, group2 in itertools.combinations(groups, 2):
-        comparisons[str(group1+"_"+group2)]=str(group1+"_vs_"+group2)   
-
-    return list(comparisons.values())                   
-
-
-de_subset = all_pairs(group_names)
-
 
 ## ====================================================== ANALYSIS ====================================================== ##
 
@@ -80,7 +68,7 @@ rule selective_alignment:
 			    -o {output} """
 
 
-# Merge all quant files into  single file
+# Merge all quant files into a single counts and/or TPM files
 rule quantmerge:
     input: quant_files = ",".join(expand("{sample}.salmon/quant.sf", sample=samples))
 
@@ -96,4 +84,3 @@ rule quantmerge:
                salmon quantmerge --quants {input.quant_files} \
                                  --column TPM \
                                  --output {output.tpm} """
-    
