@@ -118,10 +118,6 @@ count_genes_sliding_window <- function( coordinate_file,
 			
 		     genes <- .load_coordinate_file( coordinate_file )
 
-		     colnames (genes)[1] <- "seq_id"
-		     
-		     print (genes)
-		     
 		     # Plot the gene counts per sliding window across the provided chromosomes
 		     
 		     plot <- ggplot( genes, aes( x = start, y = after_stat(count)), fill = bar_color) +		     
