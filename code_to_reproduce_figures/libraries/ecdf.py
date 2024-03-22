@@ -31,7 +31,7 @@ def ecdf(values, title, show):
     plt.ylabel('Empirical Cumulative Distribution Function')
     plt.title(title)
     plt.grid(False)
-    plt.savefig( args.title+'.svg', format='svg')
+    plt.savefig( re.sub(" ", "_", args.title)+'.svg', format='svg')
 
     if show == True:
         plt.show()
