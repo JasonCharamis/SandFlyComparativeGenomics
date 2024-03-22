@@ -378,7 +378,7 @@ Figure_S11 <- visualize_tree(CCE_tree,
                              output = "Figure_S11_CCE_phylogeny.svg")
 
 
-# Extract subtree anchored by the An. gambiae Ace1(AGAP001356) and Ace2(AGAP00466)
+# Extract subtree anchored by the An. gambiae Ace1 and Ace2 genes
 ACE_tree <- extract_subtree(CCE_tree, 
                             tip1 = "AGAP001356_ACE1", 
                             tip2 = "AGAP000466_ACE2")
