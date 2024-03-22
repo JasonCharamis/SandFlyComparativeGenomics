@@ -10,3 +10,4 @@ dependencies:
     - transdecoder=5.5.0
     - hmmer=3.3.2
     - diamond=2.0.15
+    - cd-hit=4.8.1

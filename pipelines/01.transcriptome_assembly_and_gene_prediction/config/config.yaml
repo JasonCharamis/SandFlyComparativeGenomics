@@ -1,5 +1,7 @@
 
 data_directory: 'Directory containing raw data'
-trinity_threads: 'Number of threads given to Trinity.'
-rnaspades_threads: 'Number of threads given to rnaSPAdes.'
-evigene_threads: 'Number of threads given to EVidentialGene.'
+trinity_threads: 'Number of threads to be given to Trinity.'
+rnaspades_threads: 'Number of threads to be given to rnaSPAdes.'
+evigene_threads: 'Number of threads to be given to EVidentialGene.'
+cd_hit_cutoff: 'Cutoff value for CD-HIT clustering - scale at 100'
+cd_hit_threads: 'Number of threads to be given to CD-HIT'
