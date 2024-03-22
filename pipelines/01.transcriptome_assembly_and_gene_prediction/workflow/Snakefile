@@ -103,14 +103,14 @@ rule gene_prediction:
 
 
 rule cdhit_clustering:
-      input: unfiltered_proteome = '{species}.trinityunfiltered.spadeshard.okay.tr.transdecoder.pep'
-      output: filtered_proteome = '{species}.pep.fasta'
-      conda: "envs/envs.yaml"
-      threads: config['cdhit_threads']
-      params: cd_hit_cutoff = config['cd_hit_cutoff']
-      message: "Filtering {input.unfiltered_proteome} with CD-HIT at {params.cd_hit_cutoff} cutoff"
+     input: unfiltered_proteome = '{species}.trinityunfiltered.spadeshard.okay.tr.transdecoder.pep'
+     output: filtered_proteome = '{species}.pep.fasta'
+     conda: "envs/envs.yaml"
+     threads: config['cdhit_threads']
+     params: cd_hit_cutoff = config['cd_hit_cutoff']
+     message: "Filtering {input.unfiltered_proteome} with CD-HIT at {params.cd_hit_cutoff} cutoff"
       
-      shell: """ cd-hit -i {input.unfiltered_proteome} \
-                        -c {params.cd_hit_cutoff} \
-                        -o {output.filtered_proteome} \
-                        -T {threads} """
+     shell: """ cd-hit -i {input.unfiltered_proteome} \
+                       -c {params.cd_hit_cutoff} \
+                       -o {output.filtered_proteome} \
+                       -T {threads} """
