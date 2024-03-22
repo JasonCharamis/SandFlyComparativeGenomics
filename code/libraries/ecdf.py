@@ -9,7 +9,11 @@ import re
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--data', type=str, help='Input tab-separated file with gene_id (column 1) and protein size (column 2).')
 parser.add_argument('-t', '--title', type = str, default = 'ECDF of provided data', help = 'Title of produced ECDF Figure.' )
+parser.add_argument('-xlab', '--xlabel', type = str, default = 'Protein Size (amino-acids)', help = 'Label of x-axis of produced ECDF Figure.' )
+parser.add_argument('-ylab', '--ylabel', type = str, default = 'Empirical Cumulative Distribution Function', help = 'Label of y-axis of produced ECDF Figure.' )
 parser.add_argument('-s', '--show', action = 'store_true', default = False, help = 'Option to show the produced ECDF Figure.' )
+parser.add_argument('-o', '--output', type = str, default = "ECDF_of_provided_data", help = 'Name of output file.' )
+parser.add_argument('-f', '--format', type = str, default = "svg", help = 'Format of output file.' )
 parser.add_argument('--show-help', action = 'help', default = False, help = 'Option to show help message.' )
 args = parser.parse_args()
 
@@ -18,7 +22,7 @@ if not any(vars(args).values()):
     sys.exit('Error: No arguments provided.')
 
 
-def ecdf(values, title, show):
+def ecdf(values, title, output, format, xlabel = 'Protein Size (amino-acids)', ylabel = 'Empirical Cumulative Distribution Function', show = False):
     df = pd.read_csv(values, sep='\t')
     data = df.iloc[:, 1]  # Keep only the second column that contains protein sizes
 
@@ -27,15 +31,22 @@ def ecdf(values, title, show):
 
     plt.rcParams['font.family'] = 'arial'
     plt.plot(sorted_data, y_values, marker='.', linestyle='none', color='black')
-    plt.xlabel('Gene expression')
-    plt.ylabel('Empirical Cumulative Distribution Function')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.title(title)
     plt.grid(False)
-    plt.savefig( re.sub(" ", "_", args.title)+'.svg', format='svg')
+    plt.savefig( re.sub(" ", "_", args.output+".")+args.format, format=args.format)
 
     if show == True:
         plt.show()
 
 
 if __name__ == '__main__':    
-    ecdf (values = args.data, title = args.title, show = args.show)
+    ecdf (values = args.data,
+          title = args.title,
+          xlabel = args.xlabel if args.xlabel else 'Protein Size (amino-acids)',
+          ylabel = args.ylabel if args.ylabel else 'Empirical Cumulative Distribution Function',
+          show = args.show,
+          output = args.output if args.output else args.title,
+          format = args.format if args.format else 'svg'
+         )
