@@ -389,8 +389,6 @@ print_internal_nodes(ACE_tree, pattern = "AGAP")
 clade_labs <- c("Ace1" = 37, 
                 "Ace2" = 26)
 
-ACE_tree@
-
 
 # Visualize the subtree with the Ace1 and Ace2 orthologs, with color/shape species mappings and bootstrap colored circles and AGAP-matching IDs are reference
 Figure_6A <- visualize_tree(tree = ACE_tree, 
@@ -403,7 +401,7 @@ Figure_6A <- visualize_tree(tree = ACE_tree,
                             clades = clade_labs,
                             save = FALSE,
                             references = "AGAP")
-+
+
 
 # Visualize ABCB FT tree with color/shape species mappings and bootstrap colored circles
 ABC_tree <- read_tree("Supplementary_File_15.Sandfly_561_ABC_transporters_plus_Agambiae.nwk")
@@ -449,7 +447,7 @@ Figure_6B <- visualize_tree(tree = ABCB_tree,
                             reference1 = "Dmel",
                             reference2 = "Agam")
 
-# Combine Figure_s horizontally
+# Combine Figures 6A and 6B horizontally
 Figure_6AB <- multipanel(ACE_tree,
                          Figure_6B, 
                          horizontal = "T")
@@ -467,8 +465,8 @@ visualize_msa <- function(aln_filename, range, output_name = "MSA") {
 }
 
 # Call the function with the specified alignment file("ace1.aln") and range(c(250, 300))
-L995 <- visualize_msa(aln_filename = "Supplementary_File_17.Sandfly_11_VGSC_orthologs_plus_Agambiae.aln", range = c(1021, 1030))
-N1570 <- visualize_msa(aln_filename = "Supplementary_File_17.Sandfly_11_VGSC_orthologs_plus_Agambiae.aln", range = c(1604, 1614))
+L995 <- visualize_msa(aln_filename = "Supplementary_File_18.Sandfly_11_VGSC_orthologs_plus_Agambiae.aln", range = c(1021, 1030))
+N1570 <- visualize_msa(aln_filename = "Supplementary_File_18.Sandfly_11_VGSC_orthologs_plus_Agambiae.aln", range = c(1604, 1614))
 
 Figure_6C <- multipanel(L995, 
                         N1570, 
