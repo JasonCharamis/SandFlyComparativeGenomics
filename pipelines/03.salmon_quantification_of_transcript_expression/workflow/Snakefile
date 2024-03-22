@@ -2,10 +2,10 @@ import os
 import re
 import subprocess
 
-declaration_file = config['declaration_file']
+control_file = config['control_file']
 samples_dict = {}
 
-with open(declaration_file) as f:
+with open(control_file) as f:
     first_line = True
 
     for line in f:
