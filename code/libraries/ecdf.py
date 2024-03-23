@@ -12,9 +12,8 @@ parser.add_argument('-t', '--title', type = str, default = 'ECDF of provided dat
 parser.add_argument('-xlab', '--xlabel', type = str, default = 'Protein Size (amino-acids)', help = 'Label of x-axis of produced ECDF Figure.' )
 parser.add_argument('-ylab', '--ylabel', type = str, default = 'Empirical Cumulative Distribution Function', help = 'Label of y-axis of produced ECDF Figure.' )
 parser.add_argument('-s', '--show', action = 'store_true', default = False, help = 'Option to show the produced ECDF Figure.' )
-parser.add_argument('-o', '--output', type = str, default = "ECDF_of_provided_data", help = 'Name of output file.' )
+parser.add_argument('-o', '--output', type = str, help = 'Name of output file.' )
 parser.add_argument('-f', '--format', type = str, default = "svg", help = 'Format of output file.' )
-parser.add_argument('--show-help', action = 'help', default = False, help = 'Option to show help message.' )
 args = parser.parse_args()
 
 if not any(vars(args).values()):
@@ -35,7 +34,7 @@ def ecdf(values, title, output, format, xlabel = 'Protein Size (amino-acids)', y
     plt.ylabel(ylabel)
     plt.title(title)
     plt.grid(False)
-    plt.savefig( re.sub(" ", "_", args.output+".")+args.format, format=args.format)
+    plt.savefig( re.sub(" ", "_", output+".")+format, format=format)
 
     if show == True:
         plt.show()
