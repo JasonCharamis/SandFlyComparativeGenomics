@@ -7,7 +7,7 @@ sub print_usage {
     print <<"END_USAGE";
 
 pwd: Orthofinder/Orthogroups
-Usage: perl classify_orthogroups.pl Orthogroups.GeneCount.tsv Orthogroups_UnassignedGenes.tsv
+Usage: perl classify_orthogroups.pl Orthogroups.GeneCounts.tsv Orthogroups_Unassigned.tsv Orthogroups.txt
 
 Options:
   -h, --help    Display this help message
@@ -57,8 +57,8 @@ my $hg = ();
 # Scalars, arrays and hashes for calculating the number of genes per category (universal, phlebotominae_wide etc) per species and printing results
 my %data = ();
 
-open ( OUT0, ">Orthology_distribution_for_ggplot.txt" );
-open ( OUT1, ">Orthology_distribution.tsv" );
+open ( OUT0, ">orthology_distribution_for_ggplot.txt" );
+open ( OUT1, ">orthology_distribution.tsv" );
 
 #=============================================================# PARSE THROUGH THE Orthogroups_Unassigned.tsv Orthogroups.txt FILES AND GET UNASSIGNED OG IDs #==================================================#
 
@@ -386,14 +386,14 @@ for my $sp (sort keys %data) {
     }
 }
 
-my %seen2 = ();
+my %seen = ();
 
-for my $sp (sort keys %data) {
-    for my $array (sort keys %{$data{$sp}}) {
-        $gene_counts{$sp}{$array} = 0; # Initialize the count to 0 for each category
+for my $species (sort keys %data) {
+    for my $array (sort keys %{$data{$species}}) {
+        $gene_counts{$species}{$array} = 0; # Initialize the count to 0 for each category
 
-        for my $og (@{$data{$sp}{$array}}) {
-            $gene_counts{$sp}{$array} += $data{$sp}{$og};
+        for my $og (@{$data{$species}{$array}}) {
+            $gene_counts{$species}{$array} += $data{$species}{$og};
         }
     }
 }
@@ -404,23 +404,15 @@ foreach my $species (keys %species_unassigned) {
     $gene_counts{$species}{'Species_specific'} += $species_unassigned_counts{$species};
 }
 
-# Print the header
-print OUT0 "Species\tNumber_of_Genes\tType\n";
-
-# Print counts for each category per species
-foreach my $sp (sort keys %gene_counts) {
-    for my $category (keys %{$gene_counts{$sp}}) {
-        print OUT0 "$sp\t$gene_counts{$sp}{$category}\t$category\n";
-    }
-}
-
-
 my @categories = qw(Species Universal_single_copy Universal Phlebotominae_wide Phlebotomus_specific Lutzomyia_specific Phlebotominae_patchy Nematocera_patchy Diptera_patchy Species_specific); # Define custom order
 
 # Generate headers for the two files with common structure ( Species as Col1 and Relevant Categories in the rest of the columns )
 my $printed = 0; # Flag to keep track of whether OUT0 has been printed
 
 if (!$printed) { # Print header ONCE, with custom order
+
+    # Print the header
+    print OUT0 "Species\tNumber_of_Genes\tType\n";
 
     my $num_keys = scalar ( @categories );
     my $count = 0;
@@ -440,8 +432,9 @@ if (!$printed) { # Print header ONCE, with custom order
 
 
 # Print gene counts per OG per species
-for my $sp ( sort keys %data) {
-    print OUT1 "$sp\t"; # First print the sorted species names
+for my $species ( sort keys %gene_counts) {
+    
+    print OUT1 "$species\t"; # First print the sorted species names
 
     my $num_orthology = scalar ( @categories );
     my $orthology_count = 0;
@@ -449,11 +442,15 @@ for my $sp ( sort keys %data) {
     for my $orthology (@categories) {
 	$orthology_count++;
 
-	my %seen2;
-
-	unless (exists $seen2{$sp}) {
-	    print OUT1 "$gene_counts{$sp}{$orthology}";
-	    $seen2{$sp}{$orthology} = 1;
+	my %seen;
+	
+	unless (exists $seen{$species}) {
+	    unless ( $orthology eq 'Species' ) {
+		print OUT0 "$species\t$gene_counts{$species}{$orthology}\t$orthology\n";
+	    }
+	    
+	    print OUT1 "$gene_counts{$species}{$orthology}";
+	    $seen{$species}{$orthology} = 1;
 	}
 
 	if ($orthology_count < $num_orthology) {
