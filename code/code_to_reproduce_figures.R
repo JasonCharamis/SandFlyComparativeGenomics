@@ -279,7 +279,7 @@ ggsave(plot = Figure_5A,
 
 
 # Figure_5B: Independent GSTD and GSTX expansions
-GST_tree <- visualize_tree(tree = "Supplementary_File_9.Sandfly_309_GSTs_plus_Agambiae_and_Hassan_characterized_GSTs.nwk",
+Figure_S7 <- visualize_tree(tree = "Supplementary_File_9.Sandfly_309_GSTs_plus_Agambiae_and_Hassan_characterized_GSTs.nwk",
                            form = "circular",
                            color = group_colors,
                            shape = group_shapes,
@@ -287,7 +287,10 @@ GST_tree <- visualize_tree(tree = "Supplementary_File_9.Sandfly_309_GSTs_plus_Ag
                            tip_shape_size = 2,
                            tip_label_size = 1.5,
                            bootstrap_circles = TRUE,
-                           bootstrap_circle_size = 1)
+                           bootstrap_circle_size = 1,
+                           save = TRUE,
+                           output = 'Figure_S7_309_GSTs_phylogeny_and_Hassan_characterized_GSTs.svg'
+                           )
 
 
 # Extract subtrees demonstrating the GSTD and GSTX expansions
