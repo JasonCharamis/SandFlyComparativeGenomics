@@ -1,6 +1,4 @@
 
-workflow_dir=config["workflow_dir"]
-
 # Control file has the following structure:
 # Group_Name	Sample_Name	Fastq_File1	Fastq_File2  Fasta_Index_File
 # Group1        Sample1        fastq1_1.fastq.gz fastq1_2.fastq.gz   index1
