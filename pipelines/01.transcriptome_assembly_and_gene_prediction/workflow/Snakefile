@@ -1,7 +1,22 @@
 
 import os
+import re
+import subprocess
 from collections import defaultdict
 
+# Get the absolute workflow path
+def get_workflow_path(start_dir="."):
+    result = subprocess.run(["find", start_dir, "-name", "Snakefile*"], stdout=subprocess.PIPE, stderr=subprocess.PIPE) # Locate workflow_dir using Snakefile   
+    stdout_str = result.stdout.decode("utf-8").strip() # Decode stdout into a string
+
+    if not stdout_str:
+        return None
+
+    workflow_dir = re.sub(r"/workflow/.*", "", stdout_str)
+    return os.path.abspath(workflow_dir)
+
+
+# Generate Trinity samples file
 def generate_trinity_samples_file(samples, data_dir):
     species = defaultdict(list)
 
@@ -13,8 +28,10 @@ def generate_trinity_samples_file(samples, data_dir):
         with open(f'{sp}.samples', 'w') as outfile:
             outfile.write("\n".join(sorted(set(lines))))
 
-configfile: 'config.yaml'
             
+# Define variables
+workflow_dir = get_workflow_path(start_dir = ".")
+configfile: f"{workflow_dir}/config/config.yaml"
 data_directory = config['data_directory']
 samples = [str(file) for file in sorted([f[:-11] for f in os.listdir(data_directory) if f.endswith('.fastq.gz')])]
 generate_trinity_samples_file(samples, data_directory)
@@ -29,7 +46,7 @@ rule all:
          expand('{species}.trinityunfiltered.spadeshard.okay.tr.transdecoder.pep', species = species )
 
 rule make_dir:
-     output: directory({species})
+     output: directory('{species}')
      shell: 'mkdir {species}'
                     
 rule trinity:
@@ -39,7 +56,8 @@ rule trinity:
 
      conda: "envs/envs.yaml"
      threads: config['trinity_threads']
-     shell: """ trinity \
+     shell: """ cd {species}" && \
+                trinity \
      	    	--seqType fq \
                 --SS_lib_type RF \
                 --max_memory 350G \

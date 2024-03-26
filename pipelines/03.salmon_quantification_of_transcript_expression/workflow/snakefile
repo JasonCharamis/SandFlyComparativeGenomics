@@ -21,13 +21,16 @@ def parse_control_file ( control_file ):
 
         # Skip header line
         for line in f:
-            if first_line:
-                continue
+
+if first_line:
+
+continue
         
         columns = line.strip().split("\t")
 
         if len(columns) != 5:
-            raise ValueError("Invalid sample list format. Sample list should be of format: group_name\tsample_name\tfastq_filename1\tfastq_filename2\tindex_filename")
+
+raise ValueError("Invalid sample list format. Sample list should be of format: group_name\tsample_name\tfastq_filename1\tfastq_filename2\tindex_filename")
         
         group = columns[0]
         sample = columns[1]
@@ -37,12 +40,16 @@ def parse_control_file ( control_file ):
 
         # Check if sample name already exists in the dictionary, and if not, add it
         if sample not in samples_dict:
-            samples_dict[sample] = {'group': group, 'filename1': filename1, 'filename2': filename2, 'index': index}
 
-            with open ( 'samples.list', "w" ) as file: # Write sample.list file
-                print ( f"{sample}\t{group}", file=file )
+samples_dict[sample] = {'group': group, 'filename1': filename1, 'filename2': filename2, 'index': index}
+
+
+with open ( 'samples.list', "w" ) as file: # Write sample.list file
+
+print ( f"{sample}\t{group}", file=file )
         else:
-            pass
+
+pass
         
         return ( sample_dict )
 
@@ -70,37 +77,39 @@ rule index:
     input: fasta = "{index_files}"
     output: indexed = directory("{index_files}.salmon.index")
     conda: "envs/salmon.yaml"
-    shell: """ salmon index -t {input.fasta} -i {output} --keepDuplicates """
+    shell: "salmon index -t {input.fasta}"
+                         "-o {output}"
+                         "--keepDuplicates"
 
     
 # Perform alignment based on sample-to-index associations defined in sample_dict
 rule selective_alignment:
     input: fastq1=lambda wildcards: f"{wildcards.samples}_1.trimmed.fastq.gz",
-           fastq2=lambda wildcards: f"{wildcards.samples}_2.trimmed.fastq.gz",
-           indexed=lambda wildcards: directory(f"{samples_dict[wildcards.samples]['index']}.salmon.index")
+
+fastq2=lambda wildcards: f"{wildcards.samples}_2.trimmed.fastq.gz",
+
+indexed=lambda wildcards: directory(f"{samples_dict[wildcards.samples]['index']}.salmon.index")
     output: directory("{samples}.salmon")
     conda: "envs/salmon.yaml"
     threads: config['mapping_threads']
-    shell: """ salmon quant -i {input.indexed} \
-    	       	      	    -l A -1 {input.fastq1} -2 {input.fastq2} \
-			    --threads {threads} \
-			    --validateMappings \
-			    -o {output} """
+    shell: "salmon quant -i {input.indexed}"
+                        "-l A -1 {input.fastq1} -2 {input.fastq2}"
+                        "--threads {threads}"
+                        "--validateMappings"
+                        "-o {output}"
 
 
 # Merge all quant files into a single counts and/or TPM files
 rule quantmerge:
     input: quant_files = ",".join(expand("{sample}.salmon/quant.sf", sample=samples))
-
     output: counts = "all_samples.counts.tsv",
-            tpm = "all_samples.tpm.tsv",
-            
+            tpm = "all_samples.tpm.tsv"
     conda: "envs/salmon.yaml"
     message: "Merging counts and TPM values per wildcards.samples"
-    shell: """ salmon quantmerge --quants {input.quant_files} \
-                                 --column numreads \
-                                 --output {output.counts} && \
+    shell: "salmon quantmerge --quants {input.quant_files}"
+                             "--column numreads"
+                             "--output {output.counts} &&"
     
-               salmon quantmerge --quants {input.quant_files} \
-                                 --column TPM \
-                                 --output {output.tpm} """
+           "salmon quantmerge --quants {input.quant_files}"
+                              "--column TPM"
+                              "--output {output.tpm}"

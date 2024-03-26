@@ -1,25 +1,42 @@
+import os
+import re
+import subprocess
 
-species = { f[:-21] for f in os.listdir("") if f.endswith(".final_genesets.pep") }
+# Get the absolute workflow path
+def get_workflow_path(start_dir="."):
+    result = subprocess.run(["find", start_dir, "-name", "Snakefile*"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)	# Locate workflow_dir using Snakefile
+    stdout_str = result.stdout.decode("utf-8").strip() # Decode stdout into a string
+    
+    if not stdout_str:
+        return None
 
-configfile: 'config/config.yaml'
+    workflow_dir = re.sub(r"/workflow/.*", "", stdout_str)
+    return os.path.abspath(workflow_dir)
 
-reference_dataset=['reference_dataset']
+
+workflow_dir = get_workflow_path()
+configfile: f'{workflow_dir}/config/config.yaml'
+
+scripts = os.path.join(workflow_dir, "workflow/scripts")
+species = { f[:-21] for f in os.listdir(config['proteomes_dir'])}
+reference_dataset=config['reference_dataset']
 pfam_db=config['pfam_db']
 pfam_domain_id=config['pfam_domain_id']
+
 
 rule all:
      input:
           expand ('{species}.{reference_dataset}.extracted.from_{species}.blast.pfam.id.pep.fasta', species = species )
 	
 rule makedb:
-     input: '{species}.final_genesets.pep'
-     output: '{species}.dmnd'
+     input: '{reference_dataset}'
+     output: '{reference_dataset}.dmnd'
      conda: 'envs.yaml'
      shell: " diamond makedb --in {input} --db {output} "
 
 rule diamond:
-     input: '{species}.dmnd'
-     output: '{reference_dataset}.VS.{species}.fmt6'
+     input: '{reference_dataset}.dmnd'
+     output: '{species}.VS.{reference_dataset}.fmt6'
      conda: 'envs.yaml'
      threads: config['diamond_threads']
 
@@ -36,7 +53,7 @@ rule best_hit:
      output: best_hit = str(rules.diamond.output) + '.b1'
              best_hit_id = str(rules.diamond.output) + '.b1.unigenes_id'
 
-     shell: " python3 scripts/fmt6.py --nhits 1 {input} > {output.best_hit} && \ 
+     shell: " python3 {scripts}/fmt6.py --nhits 1 {input} > {output.best_hit} && \ 
               cut -f2 {output.best_hit} > {output.best_hit_id} "
 
 rule hmmsearch:
@@ -51,6 +68,7 @@ rule domain:
      input: '{species}.hmmsearch.out'
      output: '{species}.{pfam_domain_id}.unigene_id'
      shell: "grep {pfam_domain_id} {input} | cut -f1 > {output}"
+
      
 rule common_blastp_pfam:
      input: blast = rules.best_hit.output.best_hit_id,
@@ -58,11 +76,12 @@ rule common_blastp_pfam:
      output: '{species}.blast.pfam.unigene_id'
      shell: " fgrep -f {input.blast} {input.pfam} | sort -u > {output} "
 
+     
 rule extract_sequence:
      input: '{species}.final_genesets.pep',
             '{species}.blast.pfam.id'
      output: '{species}.{reference_dataset}.extracted.from_{species}.blast.pfam.id.pep.fasta'
-     shell: " python3 scripts/fastalib.py --fasta {species}.{reference_dataset}.pep.fasta \ 
+     shell: " python3 {scripts}/fastalib.py --fasta {species}.{reference_dataset}.pep.fasta \ 
                                           --extract \ 
-                                          --sequences {input.unigenes_id} "
+                                          --sequence {input.unigenes_id} "
 
