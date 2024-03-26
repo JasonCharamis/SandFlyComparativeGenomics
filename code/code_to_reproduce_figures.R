@@ -57,7 +57,7 @@ ggsave(plot = Figure_1B,
 #====================== FIGURE 2: Total P450 phylogeny and P450 gene counts across species ===================#
 
 # Figure_2A: P450 phylogeny with highlighted CYP clans
-P450_tree <- read_tree("Supplementary_File_7.Sandfly_1275_P450s_plus_Agambiae.nwk", bootstrap_support = TRUE)
+P450_tree <- read_tree("/home/jason/Documents/sandflies/submission/supplemental_information/Supplementary_Files/Supplementary_File_7.Sandfly_1275_P450s_plus_Agambiae.nwk", bootstrap_support = TRUE)
 
 P450_tree@phylo$tip.label <- unlist(lapply(P450_tree@phylo$tip.label, function(x) {
   gsub("^g", "longipalpis_g", x)
@@ -87,8 +87,6 @@ Figure_2A <- highlight_tree(P450_tree,
                                        "MITO" = "lightblue2",
                                        "CYP2" = "gold")
                             )
-
-visualize_tree(P450_tree, color = group_colors, shape = group_shapes, form = "circular", references = "Agam")
 
 # Color mappings for each sand fly species
 group_colors <- c(arabicus = "purple",
@@ -130,7 +128,6 @@ Figure_S4 <- visualize_tree(tree = P450_tree,
                             bootstrap_circle_size = 0.7,
                             save = TRUE,
                             output = "Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
-
 
 # Figure_2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
 source("libraries/complex_heatmap.R")
@@ -282,7 +279,16 @@ ggsave(plot = Figure_5A,
 
 
 # Figure_5B: Independent GSTD and GSTX expansions
-GST_tree <- read_tree("Supplementary_File_9.Sandfly_309_GSTs_plus_Agambiae.nwk")
+GST_tree <- visualize_tree(tree = "Supplementary_File_9.Sandfly_309_GSTs_plus_Agambiae_and_Hassan_characterized_GSTs.nwk",
+                           form = "circular",
+                           color = group_colors,
+                           shape = group_shapes,
+                           references = c("AGAP","Hassan"),
+                           tip_shape_size = 2,
+                           tip_label_size = 1.5,
+                           bootstrap_circles = TRUE,
+                           bootstrap_circle_size = 1)
+
 
 # Extract subtrees demonstrating the GSTD and GSTX expansions
 GSTD <- extract_subtree(GST_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
