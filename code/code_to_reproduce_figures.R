@@ -293,6 +293,20 @@ Figure_S7 <- visualize_tree(tree = "Supplementary_File_9.Sandfly_309_GSTs_plus_A
                            )
 
 
+gst <- read_tree("h.nwk", bootstrap_support = FALSE)
+
+Figure_S7 <- visualize_tree(tree = gst,
+                            form = "circular",
+                            references = c("AGAP","Hassan"),
+                            tip_shape_size = 2,
+                            tip_label_size = 1.5,
+                            save = FALSE,
+                            output = 'Figure_S7_309_GSTs_phylogeny_and_Hassan_characterized_GSTs.svg'
+                           )
+
+
+Figure_S7
+
 # Extract subtrees demonstrating the GSTD and GSTX expansions
 GSTD <- extract_subtree(GST_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
 GSTX <- extract_subtree(GST_tree, "schwetzi_TRINITY_DN5253_c0_g2_i4_p1", "schwetzi_NODE_7136_length_2426_cov_49_318317_g936_i5_p1")
