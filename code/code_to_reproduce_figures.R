@@ -2,6 +2,7 @@
 source("~/bin/OliveTrees/OliveTree/R/OliveTree.R")
 source("~/bin/OliveTrees/OliveTree/R/plotter.R")
 
+setwd("~/Documents/sandflies/submission/supplemental_information/Supplementary_Files")
 
 #====================== FIGURE 1: Sand fly species tree and stacked barplots with orthogroup representation ===================#
 
@@ -57,7 +58,7 @@ ggsave(plot = Figure_1B,
 #====================== FIGURE 2: Total P450 phylogeny and P450 gene counts across species ===================#
 
 # Figure_2A: P450 phylogeny with highlighted CYP clans
-P450_tree <- read_tree("/home/jason/Documents/sandflies/submission/supplemental_information/Supplementary_Files/Supplementary_File_7.Sandfly_1275_P450s_plus_Agambiae.nwk", bootstrap_support = TRUE)
+P450_tree <- read_tree("Supplementary_File_7.Sandfly_1275_P450s_plus_Agambiae.nwk", bootstrap_support = TRUE)
 
 P450_tree@phylo$tip.label <- unlist(lapply(P450_tree@phylo$tip.label, function(x) {
   gsub("^g", "longipalpis_g", x)
@@ -66,6 +67,11 @@ P450_tree@phylo$tip.label <- unlist(lapply(P450_tree@phylo$tip.label, function(x
 P450_tree@phylo$tip.label <- unlist(lapply(P450_tree@phylo$tip.label, function(x) {
   gsub("^Phlebotomus_papatasi", "papatasi", x)
 }))
+
+visualize_tree(P450_tree, 
+               form = "fan",
+               tiplabels = TRUE,
+               save = FALSE)
 
 # Use print_internal_nodes to identify the labels of parent nodes of the four P450 clans
 print_internal_nodes(P450_tree, 
@@ -115,7 +121,7 @@ group_shapes <- c(arabicus = "circle",
 
 
 # Figure_S4: Visualize P450 tree with reference tip labels (CYP names) from Ph. papatasi and An. gambiae
-Figure_S4 <- visualize_tree(tree = P450_tree,
+visualize_tree(tree = P450_tree,
                             form = "circular", 
                             color = group_colors,
                             shape = group_shapes,
@@ -130,7 +136,7 @@ Figure_S4 <- visualize_tree(tree = P450_tree,
                             output = "Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
 
 # Figure_2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
-source("libraries/complex_heatmap.R")
+source("~/bin/SandFlyComparativeGenomics/code/libraries/complex_heatmap.R")
 
 Figure_2B <- complex_heatmap("P450_gene_counts.tsv", 
                              reordered_rows = c(2:7,1,8:58),
@@ -185,7 +191,7 @@ Figure_3A <- multipanel(CYP6ACJ_tree,
                         horizontal = TRUE)
 
 # Figure_3B: P450 clusters in Ph. papatasi and Lu. longipalpis genomes
-source("libraries/gggenomes_lib.R")
+source("~/bin/SandFlyComparativeGenomics/code/libraries/gggenomes_lib.R")
 
 CYP6ACJ_cluster <- visualize_clusters(gff3_file = "CYP6ACJ.clusters.gff3")
 CYP9JR_cluster <- visualize_clusters(gff3_file = "CYP9JR.clusters.gff3")
@@ -205,7 +211,7 @@ ggsave(plot = Figure_3,
 
 
 # Figure_S5: Compute gene counts across Ph. papatasi and Lu. longipalpis genomes
-source("libraries/count_genes_sliding_window.R")
+source("~/bin/SandFlyComparativeGenomics/code/libraries/count_genes_sliding_window.R")
 
 Figure_S5 <- count_genes_sliding_window(coordinate_file = "P450_genes_in_sandfly_genomes.bed",
                                         sliding_window_size = 50000)
@@ -238,7 +244,7 @@ ggsave(plot = Figure_4A,
 
 
 # Figure_4B: Violin plots with expression of P450 gene expression across the 11 sand fly species
-source("libraries/violin_plots.R")
+source("~/bin/SandFlyComparativeGenomics/code/libraries/violin_plots.R")
 
 CYP4G346 <- extract_subtree(CYP4G17, 
                             tip1 = "duboscqi_TRINITY_DN414",
@@ -270,7 +276,8 @@ Figure_4 <- multipanel(Figure_4A,
 Figure_5A <- complex_heatmap("GST_gene_counts.tsv", 
                               color_palette = c("azure2","dodgerblue3","dodgerblue4"), 
                               row_annotation = TRUE, 
-                              gaps_row = c(8,10)
+                              gaps_row = c(8,10),
+                              top_annotation
                             )
 
 ggsave(plot = Figure_5A, 
@@ -288,26 +295,17 @@ Figure_S7 <- visualize_tree(tree = "Supplementary_File_9.Sandfly_309_GSTs_plus_A
                            tip_label_size = 1.5,
                            bootstrap_circles = TRUE,
                            bootstrap_circle_size = 1,
-                           save = TRUE,
+                           save = FALSE,
                            output = 'Figure_S7_309_GSTs_phylogeny_and_Hassan_characterized_GSTs.svg'
                            )
 
-
-gst <- read_tree("h.nwk", bootstrap_support = FALSE)
-
-Figure_S7 <- visualize_tree(tree = gst,
-                            form = "circular",
-                            references = c("AGAP","Hassan"),
-                            tip_shape_size = 2,
-                            tip_label_size = 1.5,
-                            save = FALSE,
-                            output = 'Figure_S7_309_GSTs_phylogeny_and_Hassan_characterized_GSTs.svg'
-                           )
 
 
 Figure_S7
 
 # Extract subtrees demonstrating the GSTD and GSTX expansions
+GST_tree <- read_tree("all_genes.aln.trimmed.phy.raxml.support.tree.tree")
+
 GSTD <- extract_subtree(GST_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
 GSTX <- extract_subtree(GST_tree, "schwetzi_TRINITY_DN5253_c0_g2_i4_p1", "schwetzi_NODE_7136_length_2426_cov_49_318317_g936_i5_p1")
 
@@ -326,9 +324,9 @@ GSTD_tree <- visualize_tree(tree = GSTD,
 GSTX_tree <- visualize_tree(tree = GSTX, 
                             color = group_colors,
                             shape = group_shapes,
-                            bootstrap_circles = TRUE, 
+                            bootstrap_circles = FALSE, 
                             bootstrap_legend = TRUE,
-                            bootstrap_numbers = FALSE,
+                            bootstrap_numbers = TRUE,
                             tiplabels = FALSE, 
                             tip_label_size = 6,
                             branch_length = FALSE,
@@ -352,17 +350,20 @@ Figure_5 <- multipanel(Figure_5A,
 Figure_S7 <- visualize_tree(tree = GST_tree,
                             form = "circular", 
                             tiplabels = TRUE,
-                            color = group_colors,
-                            shape = group_shapes,
                             tip_shape_size = 0.8,
-                            references = "AGAP",
                             tip_label_size = 1.5,
                             bootstrap_numbers = FALSE,
                             bootstrap_circles = TRUE,
                             bootstrap_circle_size = 0.8,
                             bootstrap_legend = TRUE,
                             save = TRUE,
-                            output = "Figure_S7_309_GSTs_phylogeny.svg")
+                            output = "Figure_S7_286_sandfly_GSTs_phylogeny_with_tip_labels.svg")
+
+
+Figure_S7 <- ggtree(read_tree("all_genes.aln.trimmed.phy.raxml.support.tree.tree"), 
+                    layout = "circular") +  geom_tiplab(color = "black", size = 2) + geom_nodelab(mapping = aes(x = branch, label = support), size = 2, nudge_x = 0.1, nudge_y = 0.2)
+ggsave(plot=Figure_S7, filename = "Figure_S7_286_sandfly_GSTs_phylogeny_with_tip_labels.svg", dpi = 600)
+Figure_S7
 
 # Read and Visualize UGT tree
 UGT_tree <- read_tree("Supplementary_File_11.Sandfly_214_UGTs_plus_Agambiae.nwk")
@@ -467,8 +468,8 @@ Figure_6B <- visualize_tree(tree = ABCB_tree,
                             branch_length = FALSE,
                             clades = clade_labs,
                             labeldist = 0.5,
-                            reference1 = "Dmel",
-                            reference2 = "Agam")
+                            references = c("Dmel", "Agam")
+                            )
 
 # Combine Figures 6A and 6B horizontally
 Figure_6AB <- multipanel(ACE_tree,
