@@ -163,7 +163,7 @@ complex_heatmap <- function (counts,
                                     )
     
     if ( exists ("plot")) {
-      return (p)
+      return (plot)
     } else {
       print ("Error. Plot was not generated.")
     }
