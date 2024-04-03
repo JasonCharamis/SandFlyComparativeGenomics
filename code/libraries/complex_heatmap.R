@@ -158,7 +158,7 @@ complex_heatmap <- function (counts,
                                      fontsize_col = 10,
                                      legend = T, 
                                      top_annotation=top_annotation,
-                                     left_annotation=species_ha,
+                                     left_annotation=left_annotation,
                                      right_annotation=right_annotation
                                     )
     
