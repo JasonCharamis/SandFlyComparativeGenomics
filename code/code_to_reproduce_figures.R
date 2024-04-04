@@ -341,9 +341,11 @@ group_colors <- c(group_colors,
                   "AGAP" = "black",
                   "Hassan" = "black")
 
-Figure_S7 <- visualize_tree(tree = GST_tree,
+
+Figure_S10 <- visualize_tree(tree = GST_tree,
                             form = "circular", 
-                            tiplabels = TRUE,
+                            color = group_colors,
+                            references = "AGAP",
                             tip_shape_size = 0.8,
                             tip_label_size = 1.5,
                             bootstrap_numbers = FALSE,
@@ -351,7 +353,7 @@ Figure_S7 <- visualize_tree(tree = GST_tree,
                             bootstrap_circle_size = 0.8,
                             bootstrap_legend = TRUE,
                             save = TRUE,
-                            output = "Figure_S7_276_GSTs_phylogeny_plus_Agambiae_and_Hassan_characterized_GSTs.svg")
+                            output = "Figure_S10_276_GSTs_phylogeny_plus_Agambiae_and_Hassan_characterized_GSTs.svg")
 
 
 # Read and Visualize UGT tree
