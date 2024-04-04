@@ -297,20 +297,6 @@ GST_tree <- read_tree("Supplementary_File_9.Sandfly_276_GSTs_plus_Agambiae_and_H
 GSTD <- extract_subtree(GST_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
 GSTX <- extract_subtree(GST_tree, "migonei_TRINITY_DN6514_c0_g1_i16_p1", "perniciosus_TRINITY_DN1375_c0_g2_i1_p1")
 
-print_internal_nodes(GST_tree, references = c("AGAP",names(group_colors)))
-
-group_colors <- c(group_colors, 
-                  "AGAP" = "black")
-
-visualize_tree(tree = GSTX_flipped,
-               form = "rectangular",
-               tiplabels = TRUE,
-               tip_label_colors = c(group_colors["longipalpis"], group_colors["migonei"], group_colors["AGAP"]),
-               pattern_id = c("longipalpis", "migonei", "AGAP"),
-               save = FALSE
-)
-               
-
 GSTD_tree <- visualize_tree(tree = GSTD, 
                             color = group_colors,
                             shape = group_shapes,
@@ -346,7 +332,6 @@ ggsave(plot = Figure_5B,
        filename = "Figure_5B_GST_independent_expansions.svg", 
        dpi = 600)
 
-
 Figure_5 <- multipanel(Figure_5A,
                        Figure_5B,
                        horizontal = FALSE)
@@ -354,7 +339,7 @@ Figure_5 <- multipanel(Figure_5A,
 # Visualize GST tree
 group_colors <- c(group_colors, 
                   "AGAP" = "black",
-                  "Hassan" = "brown")
+                  "Hassan" = "black")
 
 Figure_S7 <- visualize_tree(tree = GST_tree,
                             form = "circular", 
