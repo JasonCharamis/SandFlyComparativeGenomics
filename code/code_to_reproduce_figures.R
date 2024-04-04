@@ -273,11 +273,17 @@ Figure_4 <- multipanel(Figure_4A,
 #======================================================== FIGURES 5: GST variation is mostly located on Lutzomyia-specific GSTD and GSTX expansions ========================================================#
 
 # Figure_5A: Heatmap of GST gene counts per species
-Figure_5A <- complex_heatmap("GST_gene_counts.tsv", 
-                              color_palette = c("azure2","dodgerblue3","dodgerblue4"), 
-                              row_annotation = TRUE, 
-                              gaps_row = c(8,10),
-                              top_annotation
+Figure_5A <- complex_heatmap(input_file = "GST_gene_counts.tsv", 
+                             color_palette = c("azure2","dodgerblue3","dodgerblue4"),
+                             reordered_cols = c(5,3,7,2,1,4,6,8,9,10,11,12),
+                             right_annotation = TRUE, 
+                             right_annotation_title = "Total genes",
+                             left_annotation = TRUE,
+                             left_annotation_title = "Species",
+                             gaps_row = c(8,10),
+                             fontsize = 10,
+                             legend = TRUE,
+                             legend_title = "Gene counts"
                             )
 
 ggsave(plot = Figure_5A, 
@@ -286,28 +292,24 @@ ggsave(plot = Figure_5A,
 
 
 # Figure_5B: Independent GSTD and GSTX expansions
-Figure_S7 <- visualize_tree(tree = "Supplementary_File_9.Sandfly_309_GSTs_plus_Agambiae_and_Hassan_characterized_GSTs.nwk",
-                           form = "circular",
-                           color = group_colors,
-                           shape = group_shapes,
-                           references = c("AGAP","Hassan"),
-                           tip_shape_size = 2,
-                           tip_label_size = 1.5,
-                           bootstrap_circles = TRUE,
-                           bootstrap_circle_size = 1,
-                           save = FALSE,
-                           output = 'Figure_S7_309_GSTs_phylogeny_and_Hassan_characterized_GSTs.svg'
-                           )
-
-
-
-Figure_S7
-
-# Extract subtrees demonstrating the GSTD and GSTX expansions
-GST_tree <- read_tree("all_genes.aln.trimmed.phy.raxml.support.tree.tree")
+GST_tree <- read_tree("Supplementary_File_9.Sandfly_276_GSTs_plus_Agambiae_and_Hassan_characterized_GSTs.nwk")
 
 GSTD <- extract_subtree(GST_tree, "AGAP004165_GSTd2", "schwetzi_TRINITY_DN300_c0_g1_i18_p1")
-GSTX <- extract_subtree(GST_tree, "schwetzi_TRINITY_DN5253_c0_g2_i4_p1", "schwetzi_NODE_7136_length_2426_cov_49_318317_g936_i5_p1")
+GSTX <- extract_subtree(GST_tree, "migonei_TRINITY_DN6514_c0_g1_i16_p1", "perniciosus_TRINITY_DN1375_c0_g2_i1_p1")
+
+print_internal_nodes(GST_tree, references = c("AGAP",names(group_colors)))
+
+group_colors <- c(group_colors, 
+                  "AGAP" = "black")
+
+visualize_tree(tree = GSTX_flipped,
+               form = "rectangular",
+               tiplabels = TRUE,
+               tip_label_colors = c(group_colors["longipalpis"], group_colors["migonei"], group_colors["AGAP"]),
+               pattern_id = c("longipalpis", "migonei", "AGAP"),
+               save = FALSE
+)
+               
 
 GSTD_tree <- visualize_tree(tree = GSTD, 
                             color = group_colors,
@@ -316,21 +318,24 @@ GSTD_tree <- visualize_tree(tree = GSTD,
                             bootstrap_legend = TRUE,
                             bootstrap_numbers = FALSE,
                             tiplabels = FALSE, 
-                            tip_label_size = 6,
+                            tip_label_size = 3,
                             branch_length = FALSE,
                             references = "AGAP",
                             save = FALSE)
 
 GSTX_tree <- visualize_tree(tree = GSTX, 
+                            flip_nodes = TRUE,
+                            node1 = 46,
+                            node2 = 68,
                             color = group_colors,
                             shape = group_shapes,
-                            bootstrap_circles = FALSE, 
+                            bootstrap_circles = TRUE, 
                             bootstrap_legend = TRUE,
-                            bootstrap_numbers = TRUE,
+                            bootstrap_numbers = FALSE,
                             tiplabels = FALSE, 
-                            tip_label_size = 6,
+                            tip_label_size = 3,
                             branch_length = FALSE,
-                            references = "AGAP",
+                            references = "Hassan",
                             save = FALSE)
 
 Figure_5B <- multipanel(GSTD_tree, 
@@ -347,6 +352,10 @@ Figure_5 <- multipanel(Figure_5A,
                        horizontal = FALSE)
 
 # Visualize GST tree
+group_colors <- c(group_colors, 
+                  "AGAP" = "black",
+                  "Hassan" = "brown")
+
 Figure_S7 <- visualize_tree(tree = GST_tree,
                             form = "circular", 
                             tiplabels = TRUE,
@@ -357,13 +366,8 @@ Figure_S7 <- visualize_tree(tree = GST_tree,
                             bootstrap_circle_size = 0.8,
                             bootstrap_legend = TRUE,
                             save = TRUE,
-                            output = "Figure_S7_286_sandfly_GSTs_phylogeny_with_tip_labels.svg")
+                            output = "Figure_S7_276_GSTs_phylogeny_plus_Agambiae_and_Hassan_characterized_GSTs.svg")
 
-
-Figure_S7 <- ggtree(read_tree("all_genes.aln.trimmed.phy.raxml.support.tree.tree"), 
-                    layout = "circular") +  geom_tiplab(color = "black", size = 2) + geom_nodelab(mapping = aes(x = branch, label = support), size = 2, nudge_x = 0.1, nudge_y = 0.2)
-ggsave(plot=Figure_S7, filename = "Figure_S7_286_sandfly_GSTs_phylogeny_with_tip_labels.svg", dpi = 600)
-Figure_S7
 
 # Read and Visualize UGT tree
 UGT_tree <- read_tree("Supplementary_File_11.Sandfly_214_UGTs_plus_Agambiae.nwk")

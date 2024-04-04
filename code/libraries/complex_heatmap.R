@@ -34,7 +34,8 @@
 dependencies <- c("ComplexHeatmap",
             		  "ggplot2",
             		  "dplyr",
-            		  "tidyverse")
+            		  "tidyverse",
+            		  "colorRamp2")
 
 .load_packages( dependencies )
 
@@ -56,7 +57,7 @@ dependencies <- c("ComplexHeatmap",
 #' @export
 
 
-complex_heatmap <- function (counts, 
+complex_heatmap <- function (input_file, 
                              reordered_rows = NULL, 
                              reordered_cols = NULL, 
                              color_palette = NULL, 
@@ -67,11 +68,15 @@ complex_heatmap <- function (counts,
                              left_annotation = NULL, 
                              left_annotation_title = "Category",
                              gaps_row = NULL, 
-                             gaps_col= NULL, ...) {
+                             gaps_col = NULL, 
+                             scale = "none",
+                             fontsize = 30,
+                             legend = FALSE,
+                             legend_title = "Counts"
+                             ) {
   
-    counts <- read.delim(counts)
-    counts <- counts[,-ncol(counts)]
-    
+    counts <- read.delim(input_file, header = TRUE)
+  
     # First column as rownames - useful for horizontal_annotation
     rownames(counts) <- counts[,1]
     counts <- counts[,-1]
@@ -84,7 +89,6 @@ complex_heatmap <- function (counts,
       counts <- counts[,reordered_cols]
     }
   
-    counts <- counts[,-2]
     counts <- t(counts)
     counts <- as.data.frame(counts)
     
@@ -93,21 +97,21 @@ complex_heatmap <- function (counts,
     
     counts_m <- as.matrix.data.frame(counts)
     
-    # Left row annotation 
+    # Left row annotation with rownames of tsv file
     if (!is.null(left_annotation)) {
-      if (!is.null(top_annotation_title)) {
+      if (!is.null(left_annotation_title)) {
+        left_annotation_title = left_annotation_title
         left_annotation = rowAnnotation(left_annotation_title = anno_text(rownames(counts),
-                                        gp=gpar(fontsize = 1,
-                                                 fontface = "italic")
-                                       )
+                                                                          gp = gpar(fontsize = fontsize,
+                                                                                    fontface = "italic")
+                                                                        )
         )
-      } else {
-          stop("Please provide a left_annotation_title.")
-      }
+    } else {
+      left_annotation = NULL
     }
-    
-    # Add block annotation 
-    if ( !is.null(top_annotation)) {
+  }
+    # Top block annotation for grouping columns by common features
+    if (!is.null(top_annotation)) {
       if (!is.null(top_annotation_title)) {
       top_annotation = HeatmapAnnotation(top_annotation_title = anno_block(gp = gpar(fill = top_annotation), 
                                                                            labels = names(top_annotation),
@@ -119,48 +123,113 @@ complex_heatmap <- function (counts,
     }
   }
 
-    # Add row annotation with gene counts
-    if ( !is.null(right_annotation) ) {
+    # Right annotation with total gene counts per row
+    if (!is.null(right_annotation)) {
       if (!is.null(right_annotation_title)) {
-        right_annotation = rowAnnotation(left_annotation_title = anno_barplot(rowSums(counts_m),
-                                                                              border = F,
-                                                                              bar_width = 0.8,
-                                                                              gp = gpar(fill = "azure2",fontsize=40),
-                                                                              add_numbers = T, numbers_rot=0, numbers_offset=unit(1,"mm"),
-                                                                              height=unit(6,"mm"), ylim=c(0,25)
-                                                                             )
+        right_annotation = rowAnnotation("Total" = anno_barplot(rowSums(counts_m),
+                                                                        border = F,
+                                                                        bar_width = 0.8,
+                                                                        gp = gpar(fill = "azure2",fontsize = fontsize),
+                                                                        add_numbers = T, numbers_rot=0, numbers_offset=unit(1,"mm"),
+                                                                        height=unit(6,"mm"), ylim=c(0,25)
+                                                                        )
                                          )
     } else {
         stop("Please provide a right_annotation_title.")
     }
   }
     
+    if ( legend == TRUE) {
+      num_intervals = 4 # Number of intervals to break legend
+      
+      legend_breaks <- seq(
+        min(counts_m, na.rm = TRUE), max(counts_m, na.rm = TRUE), 
+        length.out = num_intervals + 1
+      )
     
-    # Draw heatmap with gene counts
-    plot <- ComplexHeatmap::pheatmap(counts_m, 
-                                     cluster_cols = F,
-                                     cluster_rows = F,
-                                     scale="none", 
-                                     number_color = "black",
-                                     gaps_row = gaps_row,
-                                     gaps_col = gaps_col, 
-                                     cellwidth = 17,
-                                     cellheight = 17,
-                                     color=col2,
-                                     border_color = "white",
-                                     silent = F,
-                                     show_colnames = T,
-                                     show_rownames = F,
-                                     display_numbers = F,
-                                     angle_col = c("45"),
-                                     fontsize="15",
-                                     fontsize_row = 17,
-                                     fontsize_col = 10,
-                                     legend = T, 
-                                     top_annotation=top_annotation,
-                                     left_annotation=left_annotation,
-                                     right_annotation=right_annotation
-                                    )
+      # Draw heatmap with gene counts
+      plot <- ComplexHeatmap::pheatmap(counts_m, 
+                                       cluster_cols = F,
+                                       cluster_rows = F,
+                                       scale = scale, 
+                                       number_color = "black",
+                                       gaps_row = gaps_row,
+                                       gaps_col = gaps_col, 
+                                       cellwidth = 17,
+                                       cellheight = 17,
+                                       color = col2,
+                                       border_color = "white",
+                                       silent = F,
+                                       show_colnames = T,
+                                       show_rownames = F,
+                                       display_numbers = F,
+                                       angle_col = c("45"),
+                                       fontsize = fontsize,
+                                       fontsize_row = 17,
+                                       fontsize_col = 10,
+                                       legend = T,
+                                       annotation_legend = T,
+                                       legend_breaks = legend_breaks,
+                                       top_annotation = top_annotation,
+                                       left_annotation = left_annotation,
+                                       right_annotation = right_annotation
+                                      )
+      
+    } else if ( legend == "auto" ) {
+          plot <- ComplexHeatmap::pheatmap(counts_m, 
+                                           cluster_cols = F,
+                                           cluster_rows = F,
+                                           scale = scale, 
+                                           number_color = "black",
+                                           gaps_row = gaps_row,
+                                           gaps_col = gaps_col, 
+                                           cellwidth = 17,
+                                           cellheight = 17,
+                                           color = col2,
+                                           border_color = "white",
+                                           silent = F,
+                                           show_colnames = T,
+                                           show_rownames = F,
+                                           display_numbers = F,
+                                           angle_col = c("45"),
+                                           fontsize = fontsize,
+                                           fontsize_row = 17,
+                                           fontsize_col = 10,
+                                           legend = T,
+                                           cluster_legend_title = legend_title,
+                                           top_annotation = top_annotation,
+                                           left_annotation = left_annotation,
+                                           right_annotation = right_annotation
+                                          )
+    } else {
+      # Draw heatmap with gene counts
+      plot <- ComplexHeatmap::pheatmap(counts_m, 
+                                       cluster_cols = F,
+                                       cluster_rows = F,
+                                       scale = scale, 
+                                       number_color = "black",
+                                       gaps_row = gaps_row,
+                                       gaps_col = gaps_col, 
+                                       cellwidth = 17,
+                                       cellheight = 17,
+                                       color = col2,
+                                       border_color = "white",
+                                       silent = F,
+                                       show_colnames = T,
+                                       show_rownames = F,
+                                       display_numbers = F,
+                                       angle_col = c("45"),
+                                       fontsize = fontsize,
+                                       fontsize_row = 17,
+                                       fontsize_col = 10,
+                                       legend = F,
+                                       top_annotation = top_annotation,
+                                       left_annotation = left_annotation,
+                                       right_annotation = right_annotation
+                                      )
+    }
+      
+
     
     if ( exists ("plot")) {
       return (plot)
