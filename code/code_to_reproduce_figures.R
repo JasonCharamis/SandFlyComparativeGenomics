@@ -13,19 +13,16 @@ species_tree@phylo$tip.label <- lapply(species_tree@phylo$tip.label, function(x)
   gsub(".final_genesets|.geneset", "", x)
 }) %>% unlist()
 
-Figure_1A <- visualize_tree(species_tree,
-                           tiplabels = TRUE,
-                           tip_label_size = 4,
-                           bootstrap_numbers = FALSE,
-                           bootstrap_circles = TRUE,
-                           bootstrap_number_nudge_x = 0,
-                           bootstrap_number_nudge_y = 0.2,
-                           save = FALSE)
-
-ggsave(plot = Figure_1A,
-       filename = "Figure_1A.svg",
-       dpi = 600)
-
+Figure_1A <- visualize_tree( tree = species_tree,
+                tiplabels = TRUE,
+                tip_label_size = 4,
+                bootstrap_numbers = FALSE,
+                bootstrap_circles = TRUE,
+                bootstrap_number_nudge_x = 0,
+                bootstrap_number_nudge_y = 0.2,
+                save = TRUE,
+                output = "Figure_1A.svg"
+               )
 
 # Figure_1B: Stacked barplots with orthogroup representation - Input is the orthology_results_for_R.txt produced by classify_orthogroups.pl
 library(ggthemes)
@@ -122,18 +119,18 @@ group_shapes <- c(arabicus = "circle",
 
 # Figure_S4: Visualize P450 tree with reference tip labels (CYP names) from Ph. papatasi and An. gambiae
 visualize_tree(tree = P450_tree,
-                            form = "circular", 
-                            color = group_colors,
-                            shape = group_shapes,
-                            references = c("papatasi", "Agam"),
-                            tip_label_size = 2,
-                            tip_shape_size = 0.8,
-                            tip_label_colors = group_colors, 
-                            bootstrap_numbers = FALSE,
-                            bootstrap_circles = TRUE,
-                            bootstrap_circle_size = 0.7,
-                            save = TRUE,
-                            output = "Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
+               form = "circular", 
+               color = group_colors,
+               shape = group_shapes,
+               references = c("papatasi", "Agam"),
+               tip_label_size = 2,
+               tip_shape_size = 0.8,
+               tip_label_colors = group_colors, 
+               bootstrap_numbers = FALSE,
+               bootstrap_circles = TRUE,
+               bootstrap_circle_size = 0.7,
+               save = TRUE,
+               output = "Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
 
 # Figure_2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
 source("~/bin/SandFlyComparativeGenomics/code/libraries/complex_heatmap.R")
@@ -341,11 +338,10 @@ group_colors <- c(group_colors,
                   "AGAP" = "black",
                   "Hassan" = "black")
 
-
 Figure_S10 <- visualize_tree(tree = GST_tree,
                             form = "circular", 
                             color = group_colors,
-                            references = "AGAP",
+                            references = c("AGAP", "Hassan"),
                             tip_shape_size = 0.8,
                             tip_label_size = 1.5,
                             bootstrap_numbers = FALSE,
