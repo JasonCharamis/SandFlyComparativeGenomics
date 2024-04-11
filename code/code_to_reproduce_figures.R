@@ -13,13 +13,13 @@ species_tree@phylo$tip.label <- lapply(species_tree@phylo$tip.label, function(x)
   gsub(".final_genesets|.geneset", "", x)
 }) %>% unlist()
 
-Figure_1A <- visualize_tree( tree = species_tree,
+visualize_tree( tree = species_tree,
                 tiplabels = TRUE,
                 tip_label_size = 4,
-                bootstrap_numbers = FALSE,
-                bootstrap_circles = TRUE,
+                bootstrap_numbers = TRUE,
+                bootstrap_circles = FALSE,
                 bootstrap_number_nudge_x = 0,
-                bootstrap_number_nudge_y = 0.2,
+                bootstrap_number_nudge_y = 0.4,
                 save = TRUE,
                 output = "Figure_1A.svg"
                )
@@ -65,15 +65,11 @@ P450_tree@phylo$tip.label <- unlist(lapply(P450_tree@phylo$tip.label, function(x
   gsub("^Phlebotomus_papatasi", "papatasi", x)
 }))
 
-visualize_tree(P450_tree, 
-               form = "fan",
-               tiplabels = TRUE,
-               save = FALSE)
 
 # Use print_internal_nodes to identify the labels of parent nodes of the four P450 clans
 print_internal_nodes(P450_tree, 
-                     form = "rectangular", 
-                     pattern = "Agam")
+                     form = "circular", 
+                     references = "Agam")
 
 # Nodes to highlight with corresponding CYP clan labels as names
 highlight_nodes = c("MITO" = 1702,
@@ -83,7 +79,7 @@ highlight_nodes = c("MITO" = 1702,
 
 # Generate the highlighted tree with colors corresponding to the different clans
 Figure_2A <- highlight_tree(P450_tree,
-                            form = "fan",
+                            form = "rectangular",
                             highlight_nodes = highlight_nodes, 
                             colors = c("CYP4"= "orange2",
                                        "CYP3" = "green4",
@@ -119,18 +115,22 @@ group_shapes <- c(arabicus = "circle",
 
 # Figure_S4: Visualize P450 tree with reference tip labels (CYP names) from Ph. papatasi and An. gambiae
 visualize_tree(tree = P450_tree,
-               form = "circular", 
-               color = group_colors,
-               shape = group_shapes,
-               references = c("papatasi", "Agam"),
+               form = "rectangular", 
+               #color = group_colors,
+               #shape = group_shapes,
+               #references = c("papatasi", "Agam"),
                tip_label_size = 2,
                tip_shape_size = 0.8,
-               tip_label_colors = group_colors, 
+               #tip_label_colors = group_colors, 
+               tiplabels = TRUE,
+               pattern_id = "Agam",
                bootstrap_numbers = FALSE,
                bootstrap_circles = TRUE,
-               bootstrap_circle_size = 0.7,
+               bootstrap_circle_size = 0.7
                save = TRUE,
-               output = "Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg")
+               output = "Figure_S4_P450_phylogeny_9_transcriptomes_2_genomes.svg"
+               )
+
 
 # Figure_2B: Heatmap of P450 gene counts per CYP subfamily across the 11 sand fly species
 source("~/bin/SandFlyComparativeGenomics/code/libraries/complex_heatmap.R")
@@ -142,7 +142,8 @@ Figure_2B <- complex_heatmap("P450_gene_counts.tsv",
                              head_annotation =  c(MITO = "lightblue", CYP2 = "gold", CYP3 = "green4", CYP4 = "orange2"),
                              row_annotation = TRUE, 
                              gaps_row = c(8,10), 
-                             gaps_col = c(7,15,44))
+                             gaps_col = c(7,15,44)
+                             )
 
 # Combine Figure_2A and Figure_2B into a single figure vertically
 Figure_2 <- multipanel(Figure_2A,
@@ -152,7 +153,6 @@ Figure_2 <- multipanel(Figure_2A,
 ggsave(plot = Figure_2B,
        filename = "Figure_2B.svg",
        dpi = 600)
-
 
 #====================== FIGURE 3: Independent CYP expansions and P450 genomic clusters ===================#
 
@@ -168,11 +168,10 @@ CYP9JR <- extract_subtree(P450_tree,
 CYP6ACJ_tree <- visualize_tree(tree = CYP6ACJ, 
                                color = group_colors,
                                shape = group_shapes,
-                               bootstrap_circles = TRUE,
                                bootstrap_numbers = FALSE,
                                tiplabels = FALSE, 
                                tip_label_size = 4,
-                               branch_length = FALSE)
+                               branch_length = TRUE)
 
 CYP9JR_tree <- visualize_tree(tree = CYP9JR, 
                               color = group_colors,
